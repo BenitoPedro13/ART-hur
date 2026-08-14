@@ -272,7 +272,9 @@ Adopt the reference's frame-sequence mechanism without copying its logo, PNG fra
 - Keep the outer walker group fixed at the exact viewport-center path anchor.
 - Rotate only the outer group to the live path tangent.
 - Flip the original ART'hur sequence horizontally when navigation direction reverses.
-- Advance frames continuously during normal motion and hold a neutral frame under reduced motion.
+- Advance frames only while a scroll-triggered project transition is active; return to and hold a neutral frame as soon as the transition completes.
+- The path outer edges may keep breathing while idle, but the walker itself must not keep walking when the user has stopped scrolling.
+- Hold the neutral frame permanently under reduced motion.
 - Do not fetch, trace, bundle, or reproduce any `MILEZ_LOGO_walk` or `MILEZ_LOGO_disappear` image.
 
 ### Mobile behavior
@@ -386,7 +388,8 @@ This approach also satisfies the existing specification:
 - [ ] Walker has no enclosing halo and reads as one substantial white character silhouette at desktop and mobile sizes
 - [ ] Walker never exceeds 82 × 82 CSS pixels on desktop or mobile
 - [ ] Visible frame index changes at walking cadence while the fixed outer container remains center-registered
-- [ ] Walker frame index advances while idle without moving the outer center anchor
+- [ ] Walker frame index advances during a scroll-triggered project transition without moving the outer center anchor
+- [ ] Walker returns to one neutral frame and stops after the transition completes
 - [ ] Reverse navigation flips the original walker while preserving the path tangent
 - [ ] No MILEZ walking/disappearance image or silhouette is copied into the repository
 - [ ] WebGL melt reverses deterministically when scrolling upward
