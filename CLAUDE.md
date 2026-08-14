@@ -76,7 +76,7 @@ Consume semantic tokens rather than raw hex values in components:
 
 ## 5. Experience rules
 
-The public site should behave as a sequence of authored project scenes, not a dashboard.
+The public site should behave as a sequence of authored project scenes, not a dashboard or carousel.
 
 The reference-led home composition should prioritize:
 
@@ -88,9 +88,13 @@ The reference-led home composition should prioritize:
 6. an archive or project sequence control
 7. a direct contact path
 
-Mobile must preserve the same hierarchy without pretending to be a desktop. Stack title, media, metadata, action, and next-project navigation clearly.
+The current home uses one fixed centered composition. Project image, atmosphere, title, and metadata morph in place. They never travel laterally as an open carousel.
 
-No scroll-jacking. Native scrolling is the source of truth.
+One modest wheel notch or short touch-scroll gesture selects the adjacent project and synchronizes the native document to that project's anchor. The selected visual transition then completes independently with authored easing. Do not require users to scroll halfway through a project interval, and do not directly scrub shader progress from wheel distance.
+
+The local route is one dotted Newsprint-white line that exits both screen edges as a single continuous curve. It breathes as one slow seesaw about its middle anchor, which stays fixed at the viewport center, and it never gains a transition-only swing: a project change leans the line to a new rest angle and leaves it there. On first load the 82 × 82 `芸` walker enters from beyond the right edge and eases to that center anchor while the route fades up and settles into its angle. Afterwards the walker holds the anchor, plays its 15-frame gait only during the entrance and project transitions, flips when navigating backward, and holds a neutral frame while idle.
+
+Mobile must preserve the same centered hierarchy, edge-to-edge route, walker, and in-place morph without converting the experience into stacked cards.
 
 ## 6. Intensity contract
 
@@ -118,11 +122,14 @@ Prefer:
 - one dominant movement per region
 - transitions shared by the active title and media
 - restrained hover metadata or preview behavior
+- React Bits `MorphSlider` for the controlled in-place project transition
+- React Bits `RippleDistortion` only as the stable active-image hover layer
 
 Avoid:
 
 - generic fades as the only transition language
 - stacked glow, parallax, cursor, WebGL, and text effects
+- running the hover ripple or walking sequence while inactive
 - autoplay audio
 - loading every project video on first view
 
@@ -133,6 +140,8 @@ Requirements:
 - lazy loading for non-active media
 - videos must have accessible names and pause/control behavior when meaningful
 - reduced motion preserves all content and hierarchy, removes scrubbing/parallax, and makes state changes immediate
+- the underlying image remains visible if either WebGL component fails
+- the route and neutral walker remain usable without motion
 
 ## 8. Accessibility
 
@@ -222,12 +231,15 @@ Update `README.md`, the active task document, and this guide when architecture o
 
 ## 12. Current delivery sequence
 
-The current priority is not the complete site. It is a focused identity prototype:
+The current priority is not the complete site. It is the centered archive timeline prototype:
 
-1. replace the inherited desktop presentation with a MILEZ-informed archive scene
-2. prove one active-project title/media transition
-3. expose project sequence, role, year, and credits clearly
-4. keep the CMS data foundation intact
-5. validate the direction before expanding into project detail, index, about, and contact routes
+1. preserve one fixed centered project stage
+2. select adjacent projects from small directional scroll gestures
+3. morph project image, atmosphere, title, and metadata in place
+4. keep one breathing edge-to-edge route with the center-locked `芸` walker
+5. use RippleDistortion only on stable image hover
+6. expose project sequence, role, year, and credits clearly
+7. keep the CMS data foundation intact
+8. validate this direction before expanding project detail, index, about, and contact routes
 
 Real project content and Arthur-authored marks are still required before final art direction is considered complete.

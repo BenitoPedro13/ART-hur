@@ -20,6 +20,16 @@ The inherited desktop, lock screen, calendar, dock, icons, and window presentati
 
 The Payload project data is still provisional seed content. The interface is an identity and transition prototype, not a claim that the placeholder projects or media are final.
 
+### Implemented interaction model
+
+- The home is one sticky, centered project stage rather than a horizontal carousel.
+- A modest wheel notch or short touch-scroll gesture immediately selects the adjacent project and synchronizes the document anchor.
+- React Bits `MorphSlider`, adapted to a controlled OGL renderer, morphs the centered image and full-stage atmosphere after selection. The transition completes on its own easing rather than being frame-scrubbed by wheel distance.
+- A single dashed white route exits both screen edges. Its outer sections keep breathing while the middle stays registered to the exact viewport center.
+- An original 15-frame `芸` art glyph is fixed at a maximum of 82 × 82 CSS pixels. It walks only during project transitions, flips for reverse navigation, and stops on a neutral frame while idle.
+- React Bits `RippleDistortion` provides a restrained local hover disturbance over the stable active image. It is suppressed during transitions, reduced motion, touch-only use, and inactive hover state.
+- DOM imagery remains underneath both WebGL layers as the fallback.
+
 ## First run
 
 ```bash

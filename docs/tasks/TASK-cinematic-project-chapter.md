@@ -225,11 +225,39 @@ on each ambient path tick:
 on each project transition tick:
   update WebGL morph uniforms
   update centered background and text layers
-  add a stronger directional swing to the ambient path motion
+  ease the route's resting tilt and bow straight to the new project's values
   recalculate glyph point and tangent from the live path
 ```
 
+The route must not gain a transition-only swing. `docs/milez-smoothnes.mov` shows
+the reference line holding one continuous, slow seesaw through a project change:
+it leans to a new angle and stays there. The earlier build added a
+`sin(progress * PI)` burst on top of the ambient motion, which read as the line
+being thrown rather than led. The tilt now travels monotonically to its new rest
+angle over `ROUTE_SETTLE_DURATION`, which is deliberately longer than the media
+morph so the line arrives after the image rather than snapping with it.
+
 Only the adjacent `from` and `to` states should be visually prominent during a transition. They occupy the same centered slot.
+
+### Route and walker entrance
+
+`docs/milez-smoothnes.mov` opens with the walker entering from beyond the right
+edge and travelling to the centre anchor, decelerating hard. Tracking the glyph
+across that recording gives a 2.7 s move whose normalised progress matches a
+quadratic ease-out within measurement noise (0.47 at the halfway point, 0.93 at
+three quarters).
+
+ART'hur reproduces the behaviour, not the recording:
+
+- the route and glyph render hidden, then the walk-in reveals them
+- the walker starts at the route's right exit and eases to the centre over
+  `ENTRANCE_DURATION` with `power2.out`
+- the route fades up over roughly the first quarter of that move
+- the resting tilt and bow scale in from near level, so the line settles into
+  its angle instead of appearing already placed
+- the gait is paced by ground covered rather than by elapsed time, so the walk
+  slows to a stop with the easing instead of freezing mid-stride on arrival
+- reduced motion skips the entrance entirely and paints the resting state
 
 ### Reduced-motion behavior
 
@@ -252,7 +280,9 @@ Use the React Bits `RippleDistortion` component as a restrained interaction laye
 - Hide it before a project transition starts so it cannot replace or obscure the authored cross-project morph.
 - Feed it only the currently selected project's resolved hero image.
 - Tune strength, swirl, rings, dispersion, tint, and glint to ART'hur's restrained marked-frequency language rather than the React Bits demo defaults.
-- Preserve image focal clarity. The hover should feel like a local liquid disturbance, not a permanent full-image filter.
+- Hovering also pushes the image out against the frame. The editorial crop is the constant, so the inner image scales while the frame's own geometry is left to the project morph.
+- The disturbance covers the whole image, not a brush under the cursor. The stock React Bits component only spawns waves from pointer movement, which leaves a still cursor with a dead image. An `ambient` field spawns broad, slow, overlapping swells across the frame for as long as the hover lasts, and the pointer trail is reduced to an accent on top of it.
+- Leaving the frame stops new waves but lets the standing ones decay, so the image settles like water rather than snapping flat.
 - Disable wave input and animation for reduced motion, touch-only interaction, failed WebGL initialization, hidden documents, and inactive hover state.
 - Keep the underlying MorphSlider/DOM image visible as the fallback at all times.
 

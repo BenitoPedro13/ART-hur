@@ -1,9 +1,19 @@
 "use client"
 
-import Image from "next/image"
+import { gsap } from "gsap"
+import { useReducedMotion } from "motion/react"
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react"
 
 import BlurText from "@/components/BlurText"
+import MorphSlider, {
+  type MorphItem,
+  type MorphSliderHandle,
+} from "@/components/MorphSlider"
+import RippleDistortion from "@/components/RippleDistortion"
+import {
+  ARTHUR_WALK_FRAME_COUNT,
+  ArthurWalker,
+} from "@/components/archive/arthur-walker"
 import { LivingTag } from "@/components/brand/living-tag"
 import { mediaUrl, resolveMedia } from "@/lib/media"
 import type { Project } from "@/payload-types"
@@ -16,61 +26,141 @@ type ArchivePrototypeProps = {
   tagline: string | null
 }
 
-type SceneDescriptor = {
-  camera: { scale: number; x: number; y: number }
-  node: { x: number; y: number }
-  panel: {
-    height: number
-    rotate: number
-    width: number
-    x: number
-    y: number
-  }
-  title: {
-    align: "left" | "right"
-    scale: number
-    x: number
-    y: number
-  }
+type MorphDescriptor = {
+  backgroundBlur: number
+  mediaHeight: number
+  mediaRotate: number
+  mediaWidth: number
+  titleScale: number
+  titleX: number
+  titleY: number
 }
 
-const SCENE_PRESETS = [
-  {
-    camera: { scale: 1, x: -90, y: 36 },
-    nodeY: 420,
-    panel: { height: 420, rotate: -1.8, width: 620, x: -420, y: -300 },
-    title: { align: "left" as const, scale: 1.08, x: -430, y: 174 },
-  },
-  {
-    camera: { scale: 1.08, x: 74, y: -26 },
-    nodeY: 258,
-    panel: { height: 360, rotate: 1.3, width: 540, x: -86, y: -270 },
-    title: { align: "right" as const, scale: 0.82, x: 122, y: 142 },
-  },
-  {
-    camera: { scale: 0.94, x: -22, y: 54 },
-    nodeY: 486,
-    panel: { height: 455, rotate: -0.5, width: 520, x: -345, y: -386 },
-    title: { align: "left" as const, scale: 0.92, x: -206, y: 128 },
-  },
-  {
-    camera: { scale: 1.04, x: 110, y: 22 },
-    nodeY: 326,
-    panel: { height: 390, rotate: 1.6, width: 670, x: -250, y: -300 },
-    title: { align: "right" as const, scale: 1.12, x: 176, y: 164 },
-  },
-  {
-    camera: { scale: 0.98, x: -42, y: -44 },
-    nodeY: 438,
-    panel: { height: 430, rotate: -1.1, width: 580, x: -392, y: -252 },
-    title: { align: "left" as const, scale: 0.88, x: -356, y: 200 },
-  },
-] as const
+// The route is one shallow, continuous line pinned to the viewport centre.
+//
+//   y(u) = 300 - tilt * (1.12u - 0.12u^3) + bow * u^2
+//
+// with u = -1 at the left exit, 0 directly under the walker, and 1 at the right
+// exit. The odd term tilts the line, the even term bows it, and both vanish at
+// u = 0 so the middle anchor never leaves the centre of the screen. Because the
+// whole expression is a cubic in u and x is linear in u, the curve is one exact
+// cubic Bezier: no joined shoulder, so no kink under the glyph.
+const ROUTE_CENTER_X = 500
+const ROUTE_CENTER_Y = 300
+const ROUTE_HALF_SPAN = 590
+const ROUTE_LEFT_X = ROUTE_CENTER_X - ROUTE_HALF_SPAN
+const ROUTE_RIGHT_X = ROUTE_CENTER_X + ROUTE_HALF_SPAN
 
-const SCENE_SPACING = [680, 790, 610, 735, 650]
+// Resting tilt and bow per project. MILEZ rocks between opposite tilts across a
+// handful of projects rather than nudging in one direction, so consecutive
+// entries change sign.
+const ROUTE_TILTS = [46, -32, 54, -40, 24]
+const ROUTE_BOWS = [12, -8, 16, -10, 7]
+
+// Ambient drift. MILEZ takes roughly half a minute to travel between its
+// extremes, so one slow shared phase seesaws the whole line instead of moving
+// each end on its own clock.
+const ROUTE_AMBIENT_PERIOD = 23000
+const ROUTE_AMBIENT_TILT = 14
+const ROUTE_AMBIENT_BOW = 8
+const ROUTE_DASH_TRAVEL = 22
+
+const TRANSITION_DURATION = 1600
+const ROUTE_SETTLE_DURATION = 2100
+const ENTRANCE_DURATION = 2650
+const ENTRANCE_START_X = ROUTE_RIGHT_X
+const WALK_STRIDE = 380
+
+function routeY(u: number, tilt: number, bow: number) {
+  return ROUTE_CENTER_Y - tilt * (1.12 * u - 0.12 * u * u * u) + bow * u * u
+}
+
+function routeGradient(u: number, tilt: number, bow: number) {
+  return (-tilt * (1.12 - 0.36 * u * u) + 2 * bow * u) / ROUTE_HALF_SPAN
+}
+
+function buildRoutePath(tilt: number, bow: number) {
+  const startY = routeY(-1, tilt, bow)
+  const endY = routeY(1, tilt, bow)
+  // y(u) = 300 + linear*u + quadratic*u^2 + cubic*u^3, reparameterised to the
+  // Bezier's own [0, 1] so the handles are the endpoint derivatives over three.
+  const linear = -1.12 * tilt
+  const quadratic = bow
+  const cubic = 0.12 * tilt
+  const startSlope = 2 * linear - 4 * quadratic + 6 * cubic
+  const endSlope = 2 * linear + 4 * quadratic + 6 * cubic
+  const third = (ROUTE_RIGHT_X - ROUTE_LEFT_X) / 3
+
+  return [
+    `M ${ROUTE_LEFT_X} ${startY.toFixed(3)}`,
+    `C ${ROUTE_LEFT_X + third} ${(startY + startSlope / 3).toFixed(3)}`,
+    `${ROUTE_LEFT_X + third * 2} ${(endY - endSlope / 3).toFixed(3)}`,
+    `${ROUTE_RIGHT_X} ${endY.toFixed(3)}`,
+  ].join(" ")
+}
+
+const MORPH_PRESETS: MorphDescriptor[] = [
+  {
+    backgroundBlur: 10,
+    mediaHeight: 53,
+    mediaRotate: -0.8,
+    mediaWidth: 48,
+    titleScale: 1,
+    titleX: -118,
+    titleY: -154,
+  },
+  {
+    backgroundBlur: 14,
+    mediaHeight: 47,
+    mediaRotate: 0.65,
+    mediaWidth: 42,
+    titleScale: 0.86,
+    titleX: 126,
+    titleY: -132,
+  },
+  {
+    backgroundBlur: 8,
+    mediaHeight: 58,
+    mediaRotate: -0.25,
+    mediaWidth: 39,
+    titleScale: 0.92,
+    titleX: -104,
+    titleY: -170,
+  },
+  {
+    backgroundBlur: 16,
+    mediaHeight: 45,
+    mediaRotate: 0.9,
+    mediaWidth: 52,
+    titleScale: 1.05,
+    titleX: 102,
+    titleY: -142,
+  },
+  {
+    backgroundBlur: 11,
+    mediaHeight: 51,
+    mediaRotate: -0.55,
+    mediaWidth: 45,
+    titleScale: 0.9,
+    titleX: -92,
+    titleY: -150,
+  },
+]
+
+const FALLBACK_IMAGE =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000'%3E%3Crect width='1600' height='1000' fill='%230b0b0a'/%3E%3Cpath d='M0 1000L1600 0' stroke='%23302d28' stroke-width='2'/%3E%3C/svg%3E"
 
 function clamp(value: number, minimum = 0, maximum = 1) {
   return Math.min(maximum, Math.max(minimum, value))
+}
+
+function smoothstep(edge0: number, edge1: number, value: number) {
+  const progress = clamp((value - edge0) / (edge1 - edge0))
+  return progress * progress * (3 - 2 * progress)
+}
+
+function interpolate(from: number, to: number, progress: number) {
+  return from + (to - from) * progress
 }
 
 function formatIndex(index: number) {
@@ -85,42 +175,6 @@ function projectRole(project: Project | undefined) {
   return project?.meta?.[0]?.value ?? null
 }
 
-function createScenes(count: number): SceneDescriptor[] {
-  let x = 360
-
-  return Array.from({ length: count }, (_, index) => {
-    if (index > 0) x += SCENE_SPACING[(index - 1) % SCENE_SPACING.length]
-    const preset = SCENE_PRESETS[index % SCENE_PRESETS.length]
-
-    return {
-      camera: { ...preset.camera },
-      node: { x, y: preset.nodeY },
-      panel: { ...preset.panel },
-      title: { ...preset.title },
-    }
-  })
-}
-
-function buildRoutePath(scenes: SceneDescriptor[]) {
-  if (scenes.length === 0) return ""
-  if (scenes.length === 1) {
-    const { x, y } = scenes[0].node
-    return `M ${x - 300} ${y + 70} C ${x - 120} ${y - 110} ${x + 120} ${y + 110} ${x + 300} ${y - 50}`
-  }
-
-  return scenes.slice(1).reduce((path, scene, index) => {
-    const from = scenes[index].node
-    const to = scene.node
-    const dx = to.x - from.x
-    const swing = index % 2 === 0 ? -150 : 145
-    return `${path} C ${from.x + dx * 0.38} ${from.y + swing} ${to.x - dx * 0.38} ${to.y - swing} ${to.x} ${to.y}`
-  }, `M ${scenes[0].node.x} ${scenes[0].node.y}`)
-}
-
-function interpolate(from: number, to: number, progress: number) {
-  return from + (to - from) * progress
-}
-
 export function ArchivePrototype({
   contactHref,
   locale,
@@ -129,200 +183,544 @@ export function ArchivePrototype({
   tagline,
 }: ArchivePrototypeProps) {
   const [activeIndex, setActiveIndex] = useState(0)
+  const [isMediaHovered, setIsMediaHovered] = useState(false)
+  const [isTransitioning, setIsTransitioning] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
-  const worldRef = useRef<HTMLDivElement>(null)
+  const routeRef = useRef<SVGSVGElement>(null)
   const pathRef = useRef<SVGPathElement>(null)
-  const glyphRef = useRef<SVGGElement>(null)
-  const walkerRef = useRef<SVGGElement>(null)
-  const sceneRefs = useRef<(HTMLElement | null)[]>([])
-  const nodeRefs = useRef<(SVGGElement | null)[]>([])
+  const pathShadowRef = useRef<SVGPathElement>(null)
+  const glyphRef = useRef<HTMLDivElement>(null)
+  const walkerRef = useRef<HTMLDivElement>(null)
+  const mediaFrameRef = useRef<HTMLDivElement>(null)
+  const backgroundMorphRef = useRef<MorphSliderHandle>(null)
+  const mediaMorphRef = useRef<MorphSliderHandle>(null)
+  const projectLayerRefs = useRef<(HTMLDivElement | null)[]>([])
   const activeIndexRef = useRef(0)
   const directionRef = useRef(1)
-  const progressRef = useRef(0)
+  const prefersReducedMotion = useReducedMotion() ?? false
   const isPortuguese = locale === "pt"
-  const scenes = useMemo(() => createScenes(projects.length), [projects.length])
-  const routePath = useMemo(() => buildRoutePath(scenes), [scenes])
-  const worldWidth = (scenes.at(-1)?.node.x ?? 960) + 520
-  const worldHeight = 760
+
+  const morphItems = useMemo<MorphItem[]>(
+    () =>
+      projects.map((project) => {
+        const media = resolveMedia(project.cover)
+        return {
+          image: mediaUrl(project.cover, "hero") ?? FALLBACK_IMAGE,
+          focalX: media?.focalX ?? 50,
+          focalY: media?.focalY ?? 50,
+        }
+      }),
+    [projects]
+  )
 
   useEffect(() => {
     const section = sectionRef.current
-    const world = worldRef.current
+    const route = routeRef.current
     const path = pathRef.current
+    const pathShadow = pathShadowRef.current
     const glyph = glyphRef.current
     const walker = walkerRef.current
+    const mediaFrame = mediaFrameRef.current
     if (
       !section ||
-      !world ||
+      !route ||
       !path ||
+      !pathShadow ||
       !glyph ||
       !walker ||
+      !mediaFrame ||
       projects.length === 0
     )
       return
 
     const timelineSection: HTMLElement = section
-    const timelineWorld: HTMLDivElement = world
+    const timelineRoute: SVGSVGElement = route
     const timelinePath: SVGPathElement = path
-    const timelineGlyph: SVGGElement = glyph
-    const timelineWalker: SVGGElement = walker
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)")
-    let frame = 0
+    const timelinePathShadow: SVGPathElement = pathShadow
+    const timelineGlyph: HTMLDivElement = glyph
+    const timelineWalker: HTMLDivElement = walker
+    const walkerFrames = Array.from(
+      timelineWalker.querySelectorAll<HTMLImageElement>("[data-walk-frame]")
+    )
+    const fixedMediaFrame: HTMLDivElement = mediaFrame
+    let scrollFrame = 0
+    let animationFrame = 0
+    let ambientElapsed = 0
+    let lastFrameTime = 0
+    let touchStartY: number | null = null
+    let wheelDelta = 0
+    let visibleWalkerFrame = 0
+    let dashDrift = 0
+    let walkDistance = 0
+    let previousGlyphX = ENTRANCE_START_X
+    let routeTilt = ROUTE_TILTS[0]
+    let routeBow = ROUTE_BOWS[0]
+    let routeOrigin = { scale: 1, x: 0, y: 0 }
+    let transition: {
+      appliedProgress: number
+      direction: number
+      fromIndex: number
+      startedAt: number
+      toIndex: number
+    } | null = null
+    let routeShift: {
+      fromBow: number
+      fromTilt: number
+      startedAt: number
+      toBow: number
+      toTilt: number
+    } | null = null
+    let entrance: { revealedAt: number } | null = prefersReducedMotion
+      ? null
+      : { revealedAt: 0 }
+    const morphEase = gsap.parseEase("power2.inOut")
+    const settleEase = gsap.parseEase("power2.inOut")
+    const entranceEase = gsap.parseEase("power2.out")
 
-    function renderTimeline() {
-      frame = 0
+    function tiltAt(index: number) {
+      return ROUTE_TILTS[index % ROUTE_TILTS.length]
+    }
+
+    function bowAt(index: number) {
+      return ROUTE_BOWS[index % ROUTE_BOWS.length]
+    }
+
+    // The route SVG and the glyph share the stage as their positioning
+    // container but not their box, and the small-screen rules move the route
+    // off the stage centre. Measuring both keeps the walker on the line instead
+    // of assuming the two are concentric.
+    function measureRoute() {
+      const stage = timelineRoute.parentElement
+      if (!stage) return
+
+      const stageBounds = stage.getBoundingClientRect()
+      const routeBounds = timelineRoute.getBoundingClientRect()
+      if (routeBounds.width === 0 || routeBounds.height === 0) return
+
+      routeOrigin = {
+        scale: Math.min(routeBounds.width / 1000, routeBounds.height / 600),
+        x:
+          routeBounds.left +
+          routeBounds.width / 2 -
+          (stageBounds.left + stageBounds.width / 2),
+        y:
+          routeBounds.top +
+          routeBounds.height / 2 -
+          (stageBounds.top + stageBounds.height / 2),
+      }
+    }
+
+    function applyProjectVisuals(
+      fromIndex: number,
+      toIndex: number,
+      progress: number,
+      direction: number
+    ) {
+      const easedProgress = clamp(progress)
+      backgroundMorphRef.current?.setTransition(
+        fromIndex,
+        toIndex,
+        easedProgress,
+        direction
+      )
+      mediaMorphRef.current?.setTransition(
+        fromIndex,
+        toIndex,
+        easedProgress,
+        direction
+      )
+
+      const fromDescriptor = MORPH_PRESETS[fromIndex % MORPH_PRESETS.length]
+      const toDescriptor = MORPH_PRESETS[toIndex % MORPH_PRESETS.length]
+      fixedMediaFrame.style.setProperty(
+        "--media-width",
+        `${interpolate(fromDescriptor.mediaWidth, toDescriptor.mediaWidth, easedProgress).toFixed(3)}vw`
+      )
+      fixedMediaFrame.style.setProperty(
+        "--media-height",
+        `${interpolate(fromDescriptor.mediaHeight, toDescriptor.mediaHeight, easedProgress).toFixed(3)}vh`
+      )
+      fixedMediaFrame.style.setProperty(
+        "--media-rotate",
+        `${interpolate(fromDescriptor.mediaRotate, toDescriptor.mediaRotate, easedProgress).toFixed(3)}deg`
+      )
+
+      const bridge = prefersReducedMotion
+        ? 0
+        : Math.pow(Math.sin(easedProgress * Math.PI), 1.2)
+
+      projectLayerRefs.current.forEach((layer, index) => {
+        if (!layer) return
+        let opacity = 0
+        let phase = 0
+
+        if (fromIndex === toIndex && index === fromIndex) {
+          opacity = 1
+        } else if (index === fromIndex) {
+          opacity = 1 - smoothstep(0.08, 0.78, easedProgress)
+          phase = easedProgress
+        } else if (index === toIndex) {
+          opacity = smoothstep(0.22, 0.92, easedProgress)
+          phase = easedProgress - 1
+        }
+
+        const descriptor = MORPH_PRESETS[index % MORPH_PRESETS.length]
+        const dimmedOpacity = opacity * (1 - bridge * 0.72)
+        const blur = Math.abs(phase) * 11 + bridge * 5
+        const translateY = phase * -18
+        const scale = descriptor.titleScale * (1 - Math.abs(phase) * 0.045)
+
+        layer.style.opacity = dimmedOpacity.toFixed(4)
+        layer.style.filter = `blur(${blur.toFixed(2)}px)`
+        layer.style.setProperty("--project-title-x", `${descriptor.titleX}px`)
+        layer.style.setProperty("--project-title-y", `${descriptor.titleY}px`)
+        layer.style.setProperty("--project-title-scale", scale.toFixed(4))
+        layer.style.setProperty(
+          "--project-copy-shift",
+          `${translateY.toFixed(2)}px`
+        )
+      })
+    }
+
+    function applyRoute(
+      tilt: number,
+      bow: number,
+      glyphX: number,
+      routeOpacity: number,
+      glyphOpacity: number,
+      direction: number,
+      walkerFrame: number
+    ) {
+      const routePath = buildRoutePath(tilt, bow)
+      timelinePath.setAttribute("d", routePath)
+      timelinePathShadow.setAttribute("d", routePath)
+      const dashOffset = dashDrift.toFixed(2)
+      timelinePath.style.strokeDashoffset = dashOffset
+      timelinePathShadow.style.strokeDashoffset = dashOffset
+      timelineRoute.style.opacity = routeOpacity.toFixed(3)
+
+      const u = (glyphX - ROUTE_CENTER_X) / ROUTE_HALF_SPAN
+      const glyphY = routeY(u, tilt, bow)
+      const lean = clamp(
+        ((Math.atan(routeGradient(u, tilt, bow)) * 180) / Math.PI) * 0.55,
+        -5,
+        5
+      )
+      const offsetX = routeOrigin.x + (glyphX - ROUTE_CENTER_X) * routeOrigin.scale
+      const offsetY = routeOrigin.y + (glyphY - ROUTE_CENTER_Y) * routeOrigin.scale
+
+      timelineGlyph.style.opacity = glyphOpacity.toFixed(3)
+      timelineGlyph.style.transform = `translate(-50%, -50%) translate(${offsetX.toFixed(2)}px, ${offsetY.toFixed(2)}px) rotate(${lean.toFixed(2)}deg)`
+      timelineWalker.style.transform = `scaleX(${direction < 0 ? -1 : 1})`
+
+      if (walkerFrame !== visibleWalkerFrame) {
+        if (walkerFrames[visibleWalkerFrame])
+          walkerFrames[visibleWalkerFrame].style.opacity = "0"
+        if (walkerFrames[walkerFrame])
+          walkerFrames[walkerFrame].style.opacity = "1"
+        visibleWalkerFrame = walkerFrame
+      }
+    }
+
+    function applyRestingRoute() {
+      applyRoute(
+        routeTilt,
+        routeBow,
+        ROUTE_CENTER_X,
+        1,
+        1,
+        directionRef.current,
+        0
+      )
+    }
+
+    function selectProject(targetIndex: number) {
+      const selectedIndex = activeIndexRef.current
+      if (targetIndex === selectedIndex) return
+
+      const direction = targetIndex > selectedIndex ? 1 : -1
+      directionRef.current = direction
+      activeIndexRef.current = targetIndex
+      setActiveIndex(targetIndex)
+
+      if (prefersReducedMotion) {
+        routeTilt = tiltAt(targetIndex)
+        routeBow = bowAt(targetIndex)
+        applyProjectVisuals(targetIndex, targetIndex, 1, direction)
+        applyRestingRoute()
+        setIsTransitioning(false)
+        return
+      }
+
+      setIsTransitioning(true)
+      transition = {
+        appliedProgress: 0,
+        direction,
+        fromIndex: selectedIndex,
+        startedAt: performance.now(),
+        toIndex: targetIndex,
+      }
+      // The line settles a little slower than the image morphs and always
+      // travels straight to its new rest angle, so a project change reads as a
+      // lean rather than a swing.
+      routeShift = {
+        fromBow: routeBow,
+        fromTilt: routeTilt,
+        startedAt: performance.now(),
+        toBow: bowAt(targetIndex),
+        toTilt: tiltAt(targetIndex),
+      }
+    }
+
+    function projectScrollTop(index: number) {
+      const denominator = Math.max(projects.length - 1, 1)
+      const ratio = projects.length > 1 ? index / denominator : 0
+      const sectionTop =
+        window.scrollY + timelineSection.getBoundingClientRect().top
+      const scrollRange = Math.max(
+        timelineSection.offsetHeight - window.innerHeight,
+        0
+      )
+      return sectionTop + scrollRange * ratio
+    }
+
+    function gotoAdjacentProject(direction: number) {
+      if (transition) return false
+
+      const targetIndex = Math.min(
+        projects.length - 1,
+        Math.max(0, activeIndexRef.current + direction)
+      )
+      if (targetIndex === activeIndexRef.current) return false
+
+      selectProject(targetIndex)
+      window.scrollTo({ top: projectScrollTop(targetIndex), behavior: "auto" })
+      return true
+    }
+
+    function timelineOwnsInput() {
+      const bounds = timelineSection.getBoundingClientRect()
+      return bounds.top <= 1 && bounds.bottom >= window.innerHeight - 1
+    }
+
+    function handleWheel(event: WheelEvent) {
+      if (!timelineOwnsInput()) return
+
+      const direction = Math.sign(event.deltaY)
+      const canMove =
+        direction > 0
+          ? activeIndexRef.current < projects.length - 1
+          : activeIndexRef.current > 0
+      if (!canMove) return
+
+      event.preventDefault()
+      if (transition) return
+
+      wheelDelta += event.deltaY
+      if (Math.abs(wheelDelta) < 8) return
+
+      const moved = gotoAdjacentProject(Math.sign(wheelDelta))
+      if (moved) wheelDelta = 0
+    }
+
+    function handleTouchStart(event: TouchEvent) {
+      touchStartY = event.touches[0]?.clientY ?? null
+    }
+
+    function handleTouchMove(event: TouchEvent) {
+      if (touchStartY === null || !timelineOwnsInput()) return
+
+      const currentY = event.touches[0]?.clientY
+      if (currentY === undefined) return
+      const delta = touchStartY - currentY
+      const direction = Math.sign(delta)
+      const canMove =
+        direction > 0
+          ? activeIndexRef.current < projects.length - 1
+          : activeIndexRef.current > 0
+      if (!canMove) return
+
+      event.preventDefault()
+      if (transition || Math.abs(delta) < 8) return
+
+      if (gotoAdjacentProject(direction)) touchStartY = currentY
+    }
+
+    function renderAnimationFrame(now: number) {
+      animationFrame = 0
+      if (lastFrameTime === 0) lastFrameTime = now
+      ambientElapsed += Math.min(now - lastFrameTime, 50)
+      lastFrameTime = now
+      const ambientPhase =
+        (ambientElapsed / ROUTE_AMBIENT_PERIOD) * Math.PI * 2
+
+      let direction = directionRef.current
+      let walkerFrame = 0
+
+      if (transition) {
+        const rawProgress = clamp(
+          (now - transition.startedAt) / TRANSITION_DURATION
+        )
+        const easedProgress = morphEase(rawProgress)
+        applyProjectVisuals(
+          transition.fromIndex,
+          transition.toIndex,
+          easedProgress,
+          transition.direction
+        )
+        dashDrift -=
+          (easedProgress - transition.appliedProgress) *
+          ROUTE_DASH_TRAVEL *
+          transition.direction
+        transition.appliedProgress = easedProgress
+        direction = transition.direction
+        walkerFrame = Math.min(
+          ARTHUR_WALK_FRAME_COUNT - 1,
+          Math.floor(rawProgress * ARTHUR_WALK_FRAME_COUNT)
+        )
+
+        if (rawProgress >= 1) {
+          transition = null
+          walkerFrame = 0
+          setIsTransitioning(false)
+        }
+      }
+
+      if (routeShift) {
+        const rawProgress = clamp(
+          (now - routeShift.startedAt) / ROUTE_SETTLE_DURATION
+        )
+        const easedProgress = settleEase(rawProgress)
+        routeTilt = interpolate(
+          routeShift.fromTilt,
+          routeShift.toTilt,
+          easedProgress
+        )
+        routeBow = interpolate(
+          routeShift.fromBow,
+          routeShift.toBow,
+          easedProgress
+        )
+        if (rawProgress >= 1) routeShift = null
+      }
+
+      let glyphX = ROUTE_CENTER_X
+      let settle = 1
+      let routeOpacity = 1
+      let glyphOpacity = 1
+
+      if (entrance) {
+        if (entrance.revealedAt === 0) entrance.revealedAt = now
+        const elapsed = now - entrance.revealedAt
+        const rawProgress = clamp(elapsed / ENTRANCE_DURATION)
+        const easedProgress = entranceEase(rawProgress)
+
+        glyphX = interpolate(ENTRANCE_START_X, ROUTE_CENTER_X, easedProgress)
+        settle = 0.14 + 0.86 * easedProgress
+        routeOpacity = clamp(easedProgress * 2.4)
+        glyphOpacity = clamp(elapsed / 240)
+        direction = -1
+
+        // Pace the gait by ground covered, so the walk slows to a stop with the
+        // easing instead of running at a fixed rate and freezing on arrival.
+        walkDistance += Math.abs(previousGlyphX - glyphX) * routeOrigin.scale
+        walkerFrame =
+          Math.floor((walkDistance / WALK_STRIDE) * ARTHUR_WALK_FRAME_COUNT) %
+          ARTHUR_WALK_FRAME_COUNT
+
+        if (rawProgress >= 1) {
+          entrance = null
+          walkerFrame = 0
+        }
+      }
+      previousGlyphX = glyphX
+
+      const tilt =
+        (routeTilt + Math.sin(ambientPhase) * ROUTE_AMBIENT_TILT) * settle
+      const bow =
+        (routeBow + Math.sin(ambientPhase * 0.57 + 1.9) * ROUTE_AMBIENT_BOW) *
+        settle
+
+      applyRoute(
+        tilt,
+        bow,
+        glyphX,
+        routeOpacity,
+        glyphOpacity,
+        direction,
+        walkerFrame
+      )
+
+      animationFrame = window.requestAnimationFrame(renderAnimationFrame)
+    }
+
+    function startAmbientAnimation() {
+      if (prefersReducedMotion || document.hidden || animationFrame) return
+      lastFrameTime = 0
+      animationFrame = window.requestAnimationFrame(renderAnimationFrame)
+    }
+
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        if (animationFrame) window.cancelAnimationFrame(animationFrame)
+        animationFrame = 0
+        lastFrameTime = 0
+        return
+      }
+
+      startAmbientAnimation()
+    }
+
+    function readScrollTarget() {
+      scrollFrame = 0
       const scrollRange = Math.max(
         timelineSection.offsetHeight - window.innerHeight,
         1
       )
-      const rawProgress = clamp(
+      const sectionProgress = clamp(
         -timelineSection.getBoundingClientRect().top / scrollRange
       )
-      const projectRange = Math.max(projects.length - 1, 0)
-      const rawPosition = rawProgress * projectRange
-      const nearestIndex = Math.min(
+      const targetIndex = Math.min(
         projects.length - 1,
-        Math.max(0, Math.round(rawPosition))
+        Math.max(0, Math.round(sectionProgress * (projects.length - 1)))
       )
-      const effectiveProgress =
-        projects.length === 1
-          ? 0.5
-          : reducedMotion.matches
-            ? nearestIndex / projectRange
-            : rawProgress
-      const effectivePosition =
-        projects.length > 1 ? effectiveProgress * projectRange : 0
-      const fromIndex = Math.min(
-        projects.length - 1,
-        Math.max(0, Math.floor(effectivePosition))
-      )
-      const toIndex = Math.min(fromIndex + 1, projects.length - 1)
-      const localProgress = effectivePosition - fromIndex
-      const fromScene = scenes[fromIndex]
-      const toScene = scenes[toIndex]
-      const length = timelinePath.getTotalLength()
-      const pathDistance = length * effectiveProgress
-      const point = timelinePath.getPointAtLength(pathDistance)
-      const tangentDistance = Math.min(7, Math.max(length * 0.006, 2))
-      const before = timelinePath.getPointAtLength(
-        clamp(pathDistance - tangentDistance, 0, length)
-      )
-      const after = timelinePath.getPointAtLength(
-        clamp(pathDistance + tangentDistance, 0, length)
-      )
-
-      if (Math.abs(rawProgress - progressRef.current) > 0.0001) {
-        directionRef.current = rawProgress >= progressRef.current ? 1 : -1
-        progressRef.current = rawProgress
-      }
-
-      const tangentAngle =
-        (Math.atan2(after.y - before.y, after.x - before.x) * 180) / Math.PI
-      const facingAngle = tangentAngle + (directionRef.current < 0 ? 180 : 0)
-      const traveled = pathDistance * directionRef.current
-      const step = reducedMotion.matches ? 0 : Math.sin(traveled / 15)
-      const bob = reducedMotion.matches ? 0 : Math.abs(step) * -5
-      const lean = reducedMotion.matches ? 0 : step * 5.5
-      const stretch = reducedMotion.matches ? 1 : 1 + Math.abs(step) * 0.045
-
-      timelineGlyph.setAttribute(
-        "transform",
-        `translate(${point.x} ${point.y}) rotate(${facingAngle})`
-      )
-      timelineWalker.setAttribute(
-        "transform",
-        `translate(0 ${bob}) rotate(${lean}) scale(1 ${stretch})`
-      )
-
-      const cameraX = interpolate(
-        fromScene.node.x + fromScene.camera.x,
-        toScene.node.x + toScene.camera.x,
-        localProgress
-      )
-      const cameraY = interpolate(
-        fromScene.node.y + fromScene.camera.y,
-        toScene.node.y + toScene.camera.y,
-        localProgress
-      )
-      const cameraScale = interpolate(
-        fromScene.camera.scale,
-        toScene.camera.scale,
-        localProgress
-      )
-      const viewportScale = clamp(
-        Math.max(window.innerWidth / 1500, window.innerHeight / 930),
-        0.62,
-        1.32
-      )
-      const scale = viewportScale * cameraScale
-      const cameraAnchorY = window.innerWidth < 700 ? 0.58 : 0.54
-
-      timelineWorld.style.transform = `translate3d(${(
-        window.innerWidth * 0.5 -
-        cameraX * scale
-      ).toFixed(2)}px, ${(
-        window.innerHeight * cameraAnchorY -
-        cameraY * scale
-      ).toFixed(2)}px, 0) scale(${scale.toFixed(4)})`
-      timelineSection.style.setProperty(
-        "--timeline-progress",
-        String(effectiveProgress)
-      )
-
-      sceneRefs.current.forEach((scene, index) => {
-        if (!scene) return
-        const signedDistance = index - effectivePosition
-        const distance = Math.abs(signedDistance)
-        const presence = clamp(1 - distance / 1.65)
-        const focus = clamp(1 - distance)
-        const driftX = signedDistance * 54
-        const driftY = Math.min(distance, 1.5) * 18
-        const panelScale = 1 + distance * 0.055
-        const panelRotation = scenes[index].panel.rotate + signedDistance * 0.8
-
-        scene.style.setProperty("--scene-presence", presence.toFixed(4))
-        scene.style.setProperty("--scene-focus", focus.toFixed(4))
-        scene.style.setProperty("--scene-distance", distance.toFixed(4))
-        scene.style.setProperty("--scene-drift-x", `${driftX.toFixed(2)}px`)
-        scene.style.setProperty("--scene-drift-y", `${driftY.toFixed(2)}px`)
-        scene.style.setProperty("--scene-panel-scale", panelScale.toFixed(4))
-        scene.style.setProperty(
-          "--scene-panel-rotate",
-          `${panelRotation.toFixed(2)}deg`
-        )
-      })
-
-      nodeRefs.current.forEach((node, index) => {
-        if (!node) return
-        node.style.setProperty(
-          "--node-active",
-          index === nearestIndex ? "1" : "0"
-        )
-      })
-
-      if (nearestIndex !== activeIndexRef.current) {
-        activeIndexRef.current = nearestIndex
-        setActiveIndex(nearestIndex)
-      }
+      selectProject(targetIndex)
     }
 
-    function scheduleTimeline() {
-      if (frame) return
-      frame = window.requestAnimationFrame(renderTimeline)
+    function scheduleTargetRead() {
+      if (scrollFrame) return
+      measureRoute()
+      scrollFrame = window.requestAnimationFrame(readScrollTarget)
     }
 
-    renderTimeline()
-    window.addEventListener("scroll", scheduleTimeline, { passive: true })
-    window.addEventListener("resize", scheduleTimeline)
-    reducedMotion.addEventListener("change", scheduleTimeline)
+    measureRoute()
+    routeTilt = tiltAt(activeIndexRef.current)
+    routeBow = bowAt(activeIndexRef.current)
+    applyProjectVisuals(
+      activeIndexRef.current,
+      activeIndexRef.current,
+      1,
+      directionRef.current
+    )
+    if (prefersReducedMotion) applyRestingRoute()
+    scrollFrame = window.requestAnimationFrame(readScrollTarget)
+    window.addEventListener("resize", scheduleTargetRead)
+    window.addEventListener("wheel", handleWheel, { passive: false })
+    window.addEventListener("touchstart", handleTouchStart, { passive: true })
+    window.addEventListener("touchmove", handleTouchMove, { passive: false })
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    startAmbientAnimation()
 
     return () => {
-      window.removeEventListener("scroll", scheduleTimeline)
-      window.removeEventListener("resize", scheduleTimeline)
-      reducedMotion.removeEventListener("change", scheduleTimeline)
-      if (frame) window.cancelAnimationFrame(frame)
+      window.removeEventListener("resize", scheduleTargetRead)
+      window.removeEventListener("wheel", handleWheel)
+      window.removeEventListener("touchstart", handleTouchStart)
+      window.removeEventListener("touchmove", handleTouchMove)
+      document.removeEventListener("visibilitychange", handleVisibilityChange)
+      if (scrollFrame) window.cancelAnimationFrame(scrollFrame)
+      if (animationFrame) window.cancelAnimationFrame(animationFrame)
     }
-  }, [projects.length, scenes])
+  }, [prefersReducedMotion, projects.length])
 
   if (projects.length === 0) {
     return (
@@ -341,6 +739,9 @@ export function ArchivePrototype({
   }
 
   const activeProject = projects[activeIndex] ?? projects[0]
+  const activeRippleImage = morphItems[activeIndex]?.image ?? FALLBACK_IMAGE
+  const mediaHoverActive = isMediaHovered && !prefersReducedMotion
+  const rippleEnabled = mediaHoverActive && !isTransitioning
   const count = Math.max(projects.length, 2)
   const indexHeading =
     tagline ?? (isPortuguese ? "Arquivo vivo." : "Living archive.")
@@ -353,13 +754,10 @@ export function ArchivePrototype({
     const ratio = projects.length > 1 ? index / denominator : 0
     const sectionTop = window.scrollY + section.getBoundingClientRect().top
     const scrollRange = Math.max(section.offsetHeight - window.innerHeight, 0)
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches
 
     window.scrollTo({
       top: sectionTop + scrollRange * ratio,
-      behavior: reducedMotion ? "auto" : "smooth",
+      behavior: prefersReducedMotion ? "auto" : "smooth",
     })
   }
 
@@ -401,152 +799,142 @@ export function ArchivePrototype({
         }
       >
         <div className="timeline-stage">
-          <div className="timeline-atmosphere" aria-hidden="true" />
-          <div className="timeline-frame" aria-hidden="true" />
+          <div className="timeline-background-morph" aria-hidden="true">
+            <MorphSlider
+              ref={backgroundMorphRef}
+              items={morphItems}
+              reducedMotion={prefersReducedMotion}
+              intensity={0.32}
+              darkness={0.78}
+              aberration={0.04}
+              dprCap={1}
+              scale={3.15}
+            />
+          </div>
+          <div className="timeline-background-shade" aria-hidden="true" />
 
           <div
-            ref={worldRef}
-            className="timeline-world"
-            style={{
-              height: worldHeight,
-              width: worldWidth,
+            ref={mediaFrameRef}
+            className="timeline-media-frame"
+            data-media-hover={mediaHoverActive ? "true" : "false"}
+            data-ripple-active={rippleEnabled ? "true" : "false"}
+            onPointerEnter={(event) => {
+              if (event.pointerType === "mouse" || event.pointerType === "pen")
+                setIsMediaHovered(true)
             }}
+            onPointerLeave={() => setIsMediaHovered(false)}
           >
-            <div className="timeline-scenes">
-              {projects.map((project, index) => {
-                const cover = mediaUrl(project.cover, "hero")
-                const media = resolveMedia(project.cover)
-                const scene = scenes[index]
-
-                return (
-                  <article
-                    key={project.id}
-                    ref={(element) => {
-                      sceneRefs.current[index] = element
-                    }}
-                    className={
-                      index === activeIndex
-                        ? "timeline-scene timeline-scene-active"
-                        : "timeline-scene"
-                    }
-                    style={
-                      {
-                        "--panel-height": `${scene.panel.height}px`,
-                        "--panel-width": `${scene.panel.width}px`,
-                        "--panel-x": `${scene.panel.x}px`,
-                        "--panel-y": `${scene.panel.y}px`,
-                        "--scene-panel-rotate": `${scene.panel.rotate}deg`,
-                        "--scene-presence": index === 0 ? 1 : 0,
-                        "--title-scale": scene.title.scale,
-                        "--title-x": `${scene.title.x}px`,
-                        "--title-y": `${scene.title.y}px`,
-                        left: scene.node.x,
-                        top: scene.node.y,
-                      } as CSSProperties
-                    }
-                    aria-hidden={index !== activeIndex}
-                  >
-                    <div className="timeline-scene-ghost" aria-hidden="true">
-                      {project.title}
-                    </div>
-                    <div className="timeline-scene-panel">
-                      {cover ? (
-                        <Image
-                          src={cover}
-                          alt=""
-                          fill
-                          priority={index === 0}
-                          sizes="(max-width: 700px) 82vw, 46vw"
-                          className="timeline-scene-image"
-                          style={{
-                            objectPosition: `${media?.focalX ?? 50}% ${media?.focalY ?? 50}%`,
-                          }}
-                        />
-                      ) : (
-                        <div className="timeline-scene-missing" />
-                      )}
-                      <div className="timeline-scene-panel-shade" />
-                    </div>
-
-                    <div
-                      className={`timeline-scene-copy timeline-scene-copy-${scene.title.align}`}
-                    >
-                      <p className="timeline-scene-kicker font-data">
-                        {formatIndex(index)} / {formatCount(projects.length)}
-                      </p>
-                      <h2>{project.title}</h2>
-                      <p className="timeline-scene-meta font-data">
-                        <span>{project.year ?? "YEAR TBC"}</span>
-                        <span>
-                          {projectRole(project) ??
-                            (isPortuguese
-                              ? "FUNÇÃO A CONFIRMAR"
-                              : "ROLE TO BE CONFIRMED")}
-                        </span>
-                      </p>
-                    </div>
-                  </article>
-                )
-              })}
-            </div>
-
-            <svg
-              className="timeline-route"
-              viewBox={`0 0 ${worldWidth} ${worldHeight}`}
-              width={worldWidth}
-              height={worldHeight}
-              aria-hidden="true"
-            >
-              <path className="timeline-route-shadow" d={routePath} />
-              <path
-                ref={pathRef}
-                className="timeline-route-line"
-                d={routePath}
+            <MorphSlider
+              ref={mediaMorphRef}
+              items={morphItems}
+              reducedMotion={prefersReducedMotion}
+              intensity={0.48}
+              darkness={0.48}
+              aberration={0.09}
+              dprCap={1.5}
+              scale={2.75}
+            />
+            <div className="timeline-ripple-layer" aria-hidden="true">
+              <RippleDistortion
+                src={activeRippleImage}
+                enabled={rippleEnabled}
+                ambient={0.62}
+                ambientRate={1.15}
+                ambientSize={0.62}
+                brushSize={110}
+                strength={0.13}
+                swirl={0.9}
+                rings={3}
+                spread={3.2}
+                fade={4.8}
+                spacing={30}
+                dispersion={0.03}
+                glint={0.14}
+                tint="#ef5a38"
+                tintAmount={0.075}
+                highlightColor="#f2ead8"
+                grayscale={false}
+                quality="low"
               />
+            </div>
+          </div>
 
-              {scenes.map((scene, index) => (
-                <g
-                  key={projects[index].id}
+          <div className="timeline-project-layers">
+            {projects.map((project, index) => {
+              const descriptor = MORPH_PRESETS[index % MORPH_PRESETS.length]
+              return (
+                <div
+                  key={project.id}
                   ref={(element) => {
-                    nodeRefs.current[index] = element
+                    projectLayerRefs.current[index] = element
                   }}
-                  className="timeline-node"
-                  transform={`translate(${scene.node.x} ${scene.node.y})`}
+                  className="timeline-project-layer"
                   style={
-                    { "--node-active": index === 0 ? 1 : 0 } as CSSProperties
+                    {
+                      "--project-background-blur": `${descriptor.backgroundBlur}px`,
+                      "--project-copy-shift": "0px",
+                      "--project-title-scale": descriptor.titleScale,
+                      "--project-title-x": `${descriptor.titleX}px`,
+                      "--project-title-y": `${descriptor.titleY}px`,
+                      opacity: index === 0 ? 1 : 0,
+                    } as CSSProperties
                   }
+                  aria-hidden={index !== activeIndex}
                 >
-                  <circle r="3.5" />
-                  <path d="M -12 0 H -6 M 6 0 H 12" />
-                </g>
-              ))}
+                  <div className="timeline-project-mark" aria-hidden="true">
+                    {project.title}
+                  </div>
+                  <div className="timeline-project-copy">
+                    <p className="timeline-project-kicker font-data">
+                      {formatIndex(index)} / {formatCount(projects.length)}
+                    </p>
+                    <h2>{project.title}</h2>
+                    <p className="timeline-project-meta font-data">
+                      <span>{project.year ?? "YEAR TBC"}</span>
+                      <span>
+                        {projectRole(project) ??
+                          (isPortuguese
+                            ? "FUNÇÃO A CONFIRMAR"
+                            : "ROLE TO BE CONFIRMED")}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
 
-              <g ref={glyphRef} className="timeline-glyph">
-                <g ref={walkerRef} className="timeline-glyph-walker">
-                  <circle className="timeline-glyph-halo" r="27" />
-                  <path
-                    className="timeline-glyph-body"
-                    d="M -7 -23 C 10 -9 3 5 -5 13 C -12 20 -9 29 6 35 C -17 36 -26 20 -17 7 C -7 -7 -20 -15 -7 -23 Z"
-                  />
-                  <path
-                    className="timeline-glyph-cut"
-                    d="M -12 3 C -4 -1 4 -1 11 3"
-                  />
-                  <circle
-                    className="timeline-glyph-foot timeline-glyph-foot-a"
-                    cx="-8"
-                    cy="36"
-                    r="2.6"
-                  />
-                  <circle
-                    className="timeline-glyph-foot timeline-glyph-foot-b"
-                    cx="8"
-                    cy="36"
-                    r="2.6"
-                  />
-                </g>
-              </g>
-            </svg>
+          <div className="timeline-frame" aria-hidden="true" />
+
+          <svg
+            ref={routeRef}
+            className="timeline-route"
+            viewBox="0 0 1000 600"
+            preserveAspectRatio="xMidYMid meet"
+            style={{ opacity: 0 }}
+            aria-hidden="true"
+          >
+            <path
+              ref={pathShadowRef}
+              className="timeline-route-shadow"
+              d={buildRoutePath(0, 0)}
+            />
+            <path
+              ref={pathRef}
+              className="timeline-route-line"
+              d={buildRoutePath(0, 0)}
+            />
+          </svg>
+
+          <div
+            ref={glyphRef}
+            className="timeline-glyph"
+            style={{ opacity: 0 }}
+            aria-hidden="true"
+          >
+            <div ref={walkerRef} className="timeline-glyph-walker">
+              <ArthurWalker />
+            </div>
           </div>
 
           <p className="timeline-side-label timeline-side-label-left font-data">
@@ -555,13 +943,6 @@ export function ArchivePrototype({
           <p className="timeline-side-label timeline-side-label-right font-data">
             {activeProject.year ?? "YEAR TBC"}
           </p>
-
-          <div className="timeline-status" aria-live="polite">
-            <p className="font-data">
-              {formatIndex(activeIndex)} / {formatCount(projects.length)}
-            </p>
-            <p>{activeProject.title}</p>
-          </div>
         </div>
       </section>
 
