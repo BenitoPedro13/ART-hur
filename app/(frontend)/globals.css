@@ -132,6 +132,12 @@
   --ease-window: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+@property --media-frame-scale {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -272,6 +278,7 @@
   }
 
   .timeline-media-frame {
+    --media-frame-scale: 1;
     --media-height: 53vh;
     --media-hover-scale: 1;
     --media-rotate: -0.8deg;
@@ -290,8 +297,10 @@
     border: 1px solid rgb(233 226 210 / 0.16);
     background: #0d0c0a;
     box-shadow: 0 36px 110px rgb(0 0 0 / 0.56);
-    transform: translate(-50%, -50%) rotate(var(--media-rotate));
+    transform: translate(-50%, -50%) rotate(var(--media-rotate))
+      scale(var(--media-frame-scale));
     transform-origin: center;
+    transition: --media-frame-scale 780ms cubic-bezier(0.2, 0.62, 0.22, 1);
     will-change: width, height, transform;
   }
 
@@ -305,7 +314,8 @@
   }
 
   .timeline-media-frame[data-media-hover="true"] {
-    --media-hover-scale: 1.055;
+    --media-frame-scale: 1.022;
+    --media-hover-scale: 1.04;
   }
 
   .timeline-media-frame::after {
@@ -441,20 +451,20 @@
     vector-effect: non-scaling-stroke;
   }
 
-  /* Round caps on a zero-length dash draw dots. Firefox needs the dash to be
-     non-zero for the caps to render at all. */
+  /* Dash lengths are viewBox units and scale with the route box; stroke-width
+     is screen pixels because of non-scaling-stroke. */
   .timeline-route-shadow {
     stroke: rgb(0 0 0 / 0.4);
-    stroke-width: 4.4;
-    stroke-linecap: round;
-    stroke-dasharray: 0.01 5.4;
+    stroke-width: 3.4;
+    stroke-linecap: butt;
+    stroke-dasharray: 8 6;
   }
 
   .timeline-route-line {
     stroke: rgb(245 241 232 / 0.92);
-    stroke-width: 2.5;
-    stroke-linecap: round;
-    stroke-dasharray: 0.01 5.4;
+    stroke-width: 1.7;
+    stroke-linecap: butt;
+    stroke-dasharray: 8 6;
   }
 
   .timeline-node {
@@ -810,6 +820,7 @@
     }
 
     .timeline-media-frame {
+      --media-frame-scale: 1 !important;
       --media-hover-scale: 1 !important;
     }
 

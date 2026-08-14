@@ -75,6 +75,10 @@ uniform float uDispersion;
 uniform float uGlint;
 uniform float uTintAmount;
 uniform float uGrayscale;
+uniform float uTime;
+uniform float uJiggle;
+uniform float uJiggleScale;
+uniform float uJiggleSpeed;
 const float TAU = 6.283185307179586;
 vec2 coverUV(vec2 uv) {
   vec2 safe = max(uTextureSize, vec2(1.0));
@@ -86,6 +90,18 @@ vec2 coverUV(vec2 uv) {
 void main() {
   float amount = texture2D(uDisplacement, vUv).r;
   vec2 base = coverUV(vUv);
+  // Two crossed sine pairs at slightly detuned rates. They beat against each
+  // other, so the whole image drifts like a slack water surface instead of
+  // repeating on a visible loop.
+  if (uJiggle > 0.0001) {
+    vec2 q = vUv * uJiggleScale;
+    float t = uTime * uJiggleSpeed;
+    vec2 wobble = vec2(
+      sin(q.y * 3.1 + t) * 0.6 + sin(q.y * 1.7 - q.x * 0.9 + t * 0.71) * 0.4,
+      sin(q.x * 2.7 - t * 0.83) * 0.6 + sin(q.x * 1.3 + q.y * 1.1 + t * 0.57) * 0.4
+    );
+    base += wobble * uJiggle;
+  }
   float theta = amount * uSwirl * TAU;
   vec2 dir = vec2(sin(theta), cos(theta));
   vec2 push = dir * amount * uStrength;
@@ -136,17 +152,11 @@ const hexToRGB = (hex) => {
 
 // Adapted from the open-source React Bits RippleDistortion component. ART'hur
 // suspends its render loop whenever the hover layer is inactive or hidden.
-const fract = (value) => value - Math.floor(value)
-
-// Cheap deterministic scatter for the ambient field. It only needs to look
-// unrepeating, so a hashed sine beats carrying a PRNG.
-const hashed = (seed) => fract(Math.sin(seed) * 43758.5453)
-
 const RippleDistortion = ({
   src,
-  ambient = 0,
-  ambientRate = 2,
-  ambientSize = 1.3,
+  jiggle = 0,
+  jiggleScale = 2.6,
+  jiggleSpeed = 1,
   brushSize = 150,
   strength = 0.2,
   swirl = 1,
@@ -169,13 +179,11 @@ const RippleDistortion = ({
 }) => {
   const mountRef = useRef(null)
   const configRef = useRef({
-    ambient,
-    ambientRate,
-    ambientSize,
     brushSize,
     clickStrength,
     enabled,
     fade,
+    jiggle,
     spacing,
     spread,
     trigger,
@@ -185,35 +193,31 @@ const RippleDistortion = ({
 
   useEffect(() => {
     configRef.current = {
-      ambient,
-      ambientRate,
-      ambientSize,
       brushSize,
       clickStrength,
       enabled,
       fade,
+      jiggle,
       spacing,
       spread,
       trigger,
     }
   }, [
-    ambient,
-    ambientRate,
-    ambientSize,
     brushSize,
     clickStrength,
     enabled,
     fade,
+    jiggle,
     spacing,
     spread,
     trigger,
   ])
 
-  // Waves are only spawned by input, so an ambient field that starts with a
-  // hover needs an explicit nudge to restart the loop.
+  // The render loop is otherwise driven by input waves alone, so the standing
+  // field needs an explicit nudge when a hover turns it on.
   useEffect(() => {
-    if (enabled && ambient > 0) loopRef.current?.()
-  }, [ambient, enabled])
+    if (enabled && jiggle > 0) loopRef.current?.()
+  }, [enabled, jiggle])
 
   useEffect(() => {
     const mount = mountRef.current
@@ -313,6 +317,12 @@ const RippleDistortion = ({
       uGlint: { value: glint },
       uGrayscale: { value: grayscale ? 1 : 0 },
       uHighlight: { value: hexToRGB(highlightColor) },
+      // Neutral at construction so changing the field never tears down the
+      // GL context; the loop and the sync effect below own these.
+      uJiggle: { value: 0 },
+      uJiggleScale: { value: 1 },
+      uJiggleSpeed: { value: 1 },
+      uTime: { value: 0 },
       uResolution: { value: [1, 1] },
       uStrength: { value: strength },
       uSwirl: { value: swirl },
@@ -338,10 +348,9 @@ const RippleDistortion = ({
     let height = 1
     let raf = 0
     let previousTime = 0
-    let ambientDebt = 0
-    let ambientSeed = 0
-    // The ambient field spawns waves from inside the loop, and spawning asks
-    // for a frame. This flag keeps that from queueing a second one.
+    let elapsed = 0
+    // setNewWave asks for a frame, and the loop calls it. This flag keeps that
+    // from queueing a second one.
     let running = false
 
     const renderComposite = () => {
@@ -396,26 +405,13 @@ const RippleDistortion = ({
         ? Math.min(0.05, (now - previousTime) / 1000)
         : 0
       previousTime = now
-      const ambientActive = config.enabled && config.ambient > 0
-
-      // Leaving the frame stops new waves but lets the standing ones decay, so
-      // the image settles instead of snapping flat.
-      if (ambientActive) {
-        ambientDebt += delta * Math.max(0, config.ambientRate)
-        const field = Math.max(width, height) * Math.max(0.1, config.ambientSize)
-        while (ambientDebt >= 1) {
-          ambientDebt -= 1
-          ambientSeed += 1
-          setNewWave(
-            hashed(ambientSeed * 1.7) * width,
-            hashed(ambientSeed * 3.1 + 11.3) * height,
-            1,
-            field,
-            config.ambient
-          )
-        }
-      } else {
-        ambientDebt = 0
+      // Leaving the frame stops the field and any new waves, but lets the
+      // standing ones decay, so the image settles instead of snapping flat.
+      const fieldActive = config.enabled && config.jiggle > 0
+      compositeUniforms.uJiggle.value = fieldActive ? config.jiggle : 0
+      if (fieldActive) {
+        elapsed += delta
+        compositeUniforms.uTime.value = elapsed
       }
       const growth = 1 - Math.exp(-delta * 1.09)
       const decay = Math.exp(
@@ -452,7 +448,7 @@ const RippleDistortion = ({
       geometry.attributes.iOpacity.needsUpdate = true
       renderComposite()
       running = false
-      if (hasVisibleWave || ambientActive) raf = requestAnimationFrame(loop)
+      if (hasVisibleWave || fieldActive) raf = requestAnimationFrame(loop)
       else previousTime = 0
     }
 
@@ -468,7 +464,7 @@ const RippleDistortion = ({
     }
     loopRef.current = startLoop
 
-    function setNewWave(x, y, power, size, opacity) {
+    function setNewWave(x, y, power) {
       const config = configRef.current
       const wave = waves[current]
       current = (current + 1) % MAX_WAVES
@@ -476,8 +472,8 @@ const RippleDistortion = ({
       wave.y = y
       wave.scale = START_SCALE * power
       wave.target = START_SCALE * Math.max(1, config.spread) * power
-      wave.size = Math.max(1, size ?? config.brushSize)
-      wave.opacity = opacity ?? 1
+      wave.size = Math.max(1, config.brushSize)
+      wave.opacity = 1
       startLoop()
     }
 
@@ -540,7 +536,7 @@ const RippleDistortion = ({
     }
     image.src = src
 
-    if (configRef.current.ambient > 0) startLoop()
+    if (configRef.current.jiggle > 0) startLoop()
 
     return () => {
       disposed = true
@@ -580,11 +576,15 @@ const RippleDistortion = ({
     uniforms.composite.uGrayscale.value = grayscale ? 1 : 0
     uniforms.composite.uHighlight.value = hexToRGB(highlightColor)
     uniforms.composite.uTint.value = hexToRGB(tint)
+    uniforms.composite.uJiggleScale.value = jiggleScale
+    uniforms.composite.uJiggleSpeed.value = jiggleSpeed
   }, [
     dispersion,
     glint,
     grayscale,
     highlightColor,
+    jiggleScale,
+    jiggleSpeed,
     rings,
     strength,
     swirl,

@@ -838,16 +838,16 @@ export function ArchivePrototype({
               <RippleDistortion
                 src={activeRippleImage}
                 enabled={rippleEnabled}
-                ambient={0.62}
-                ambientRate={1.15}
-                ambientSize={0.62}
-                brushSize={110}
-                strength={0.13}
-                swirl={0.9}
+                jiggle={0.016}
+                jiggleScale={2.6}
+                jiggleSpeed={1}
+                brushSize={120}
+                strength={0.12}
+                swirl={0.7}
                 rings={3}
                 spread={3.2}
-                fade={4.8}
-                spacing={30}
+                fade={2.4}
+                spacing={24}
                 dispersion={0.03}
                 glint={0.14}
                 tint="#ef5a38"
