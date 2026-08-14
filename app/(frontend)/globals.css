@@ -1,0 +1,181 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+    /* ART'hur semantic colour roles, mapped from Marked Frequencies. */
+    --background: #0b0b0a; /* Vinyl Black */
+    --foreground: #e9e2d2; /* Newsprint */
+    --card: #141310;
+    --card-foreground: #e9e2d2;
+    --popover: #141310;
+    --popover-foreground: #e9e2d2;
+    --primary: #d83823; /* Oxide Red */
+    --primary-foreground: #fff7e8;
+    --secondary: #1d1b17;
+    --secondary-foreground: #e9e2d2;
+    --muted: #1a1916;
+    --muted-foreground: #9d9a92; /* Concrete */
+    --accent: #e7c64a; /* Tape Yellow */
+    --accent-foreground: #0b0b0a;
+    --destructive: #ff4d3a;
+    --border: rgb(233 226 210 / 0.14);
+    --input: rgb(233 226 210 / 0.18);
+    --ring: #4b61ff; /* Flash Blue */
+    --chart-1: #d83823;
+    --chart-2: #e7c64a;
+    --chart-3: #4b61ff;
+    --chart-4: #9d9a92;
+    --chart-5: #e9e2d2;
+    --radius: 0.35rem;
+    --sidebar: #141310;
+    --sidebar-foreground: #e9e2d2;
+    --sidebar-primary: #d83823;
+    --sidebar-primary-foreground: #fff7e8;
+    --sidebar-accent: #1d1b17;
+    --sidebar-accent-foreground: #e9e2d2;
+    --sidebar-border: rgb(233 226 210 / 0.14);
+    --sidebar-ring: #4b61ff;
+}
+
+.dark {
+    --background: #0b0b0a;
+    --foreground: #e9e2d2;
+    --card: #141310;
+    --card-foreground: #e9e2d2;
+    --popover: #141310;
+    --popover-foreground: #e9e2d2;
+    --primary: #d83823;
+    --primary-foreground: #fff7e8;
+    --secondary: #1d1b17;
+    --secondary-foreground: #e9e2d2;
+    --muted: #1a1916;
+    --muted-foreground: #9d9a92;
+    --accent: #e7c64a;
+    --accent-foreground: #0b0b0a;
+    --destructive: #ff4d3a;
+    --border: rgb(233 226 210 / 0.14);
+    --input: rgb(233 226 210 / 0.18);
+    --ring: #4b61ff;
+    --chart-1: #d83823;
+    --chart-2: #e7c64a;
+    --chart-3: #4b61ff;
+    --chart-4: #9d9a92;
+    --chart-5: #e9e2d2;
+    --sidebar: #141310;
+    --sidebar-foreground: #e9e2d2;
+    --sidebar-primary: #d83823;
+    --sidebar-primary-foreground: #fff7e8;
+    --sidebar-accent: #1d1b17;
+    --sidebar-accent-foreground: #e9e2d2;
+    --sidebar-border: rgb(233 226 210 / 0.14);
+    --sidebar-ring: #4b61ff;
+}
+
+@theme inline {
+    --font-sans: var(--font-sans);
+    --font-heading: var(--font-heading);
+    --font-mono: var(--font-mono);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+
+    /* --- Archive shell surface -----------------------------------------
+       Atmosphere stays behind the work. Core controls recede. */
+    --color-void: #0b0b0a;
+    --color-glass: rgb(20 19 16 / 0.72);
+    --color-glass-edge: rgb(233 226 210 / 0.16);
+    --color-signal: #d83823;
+    --color-tape: #e7c64a;
+    --color-flash: #4b61ff;
+}
+
+@theme {
+    /* Windows and project cards should cut like an edit, then settle. */
+    --ease-window: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply bg-background text-foreground;
+    background-image: radial-gradient(circle at 18% 12%, rgb(216 56 35 / 0.12), transparent 32%), radial-gradient(circle at 82% 70%, rgb(75 97 255 / 0.08), transparent 30%);
+    }
+  html {
+    @apply font-sans;
+    }
+
+  /* The lock screen renders on the server so it is present in the first
+     painted frame. For a visitor who already dismissed it this session, the
+     blocking script in <head> stamps the document before paint and this rule
+     hides it with no flash in either direction. React then unmounts it. */
+  html[data-intro-seen] [data-lock-screen] {
+    display: none;
+    }
+
+  /* Numbers are data here — years, frame indices, timecode — so they get the
+     mono face and lining figures wherever they appear. */
+  .font-display {
+    font-family: var(--font-heading);
+    letter-spacing: -0.06em;
+    }
+
+  .font-data {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    }
+
+  /* The window open/close animation is the only orchestrated motion on the
+     page; honour the OS setting rather than shipping it unconditionally. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+      }
+    }
+}
