@@ -32,6 +32,45 @@ The reference frame uses one composed field rather than separate cards:
 
 ART'hur should borrow this interaction model, not MILEZ's Japanese lettering, brand marks, assets, exact curve, or exact layout.
 
+### Frame-study method
+
+The motion direction is now grounded in two source captures rather than a single still:
+
+- `docs/timeline-swings.mov`, the interaction reference
+- `docs/ART'hur.mov`, the current ART'hur implementation capture
+
+Both files were inspected with `ffprobe` and sampled with `ffmpeg` at four full-resolution frames per second, twice the requested minimum. The source files are 3420 × 2062 H.264 captures. The reference is 7.776667 seconds long and produced 31 sampled frames. The ART'hur capture is 21.835 seconds long and produced 87 sampled frames. Derived PNG frames and contact sheets live only in Jcode scratch storage, not in the repository.
+
+This comparison must be completed before another source-code pass. The videos remain ignored and unmodified.
+
+### Comparative motion findings
+
+The 4 fps study changes the implementation target in several important ways:
+
+1. **The reference behaves as one navigable visual world, not a sequence of full-screen slides.** Adjacent project scenes remain spatially present beyond the active center. Scrolling changes the camera/composition through that world. ART'hur currently replaces one viewport-filling cover with another, so the transition still reads as a slideshow even though opacity, scale, clipping, and filtering are interpolated.
+2. **The dotted route is connective tissue, not the main graphic.** In the reference it is thin, low-contrast, oblique, and allowed to cross imagery and empty space. The current centered sine-like route, numbered circular nodes, and bright active marker read as a conventional infographic laid on top of the work.
+3. **The marker needs authored locomotion.** The reference marker is visually attached to the route and its travel reads directionally. ART'hur currently translates a rigid circular badge to points on the path without tangent rotation, directional facing, squash, step, or any other internal gait. It moves, but it does not yet “walk.”
+4. **The scene morph is spatial before it is chromatic.** Reference imagery changes through overlapping crops, panel displacement, scale, depth, and the reveal of the neighboring composition. ART'hur primarily crossfades two full-bleed layers and adds a symmetric inset clip, which produces a dissolve with a shrinking rectangle rather than one scene becoming another.
+5. **Typography belongs to each project scene.** In the reference, labels and large authored marks occupy different positions and scales per project, with active information staying restrained. ART'hur keeps one fixed centered title template and swaps its content at the nearest-node boundary. This makes every project inherit the same composition and causes the title to dominate the photography.
+6. **Project spacing is art-directed, not mechanically equal.** The reference route has uneven visual beats and different amounts of negative space around each node. ART'hur distributes all nodes uniformly along one reusable curve and gives every transition the same geometry.
+7. **Reverse travel is part of the behavior.** The reference capture moves through transitions in both directions. Every transform, reveal, marker orientation, and typography state must therefore be a deterministic function of scroll progress. No one-way entrance animation or stateful transition may be required for the composition to look correct.
+8. **Darkness is a compositional buffer, not an empty loading state.** The reference contains very dark intervals around approximately 3.00–5.75 seconds, but faint route, neighboring imagery, and spatial continuity retain orientation. ART'hur should permit quiet low-information passages without allowing the screen to become an unexplained blank or letting the next cover suddenly replace it.
+9. **The current capture changes scenes too literally.** FFmpeg scene analysis finds many pronounced whole-frame changes in `ART'hur.mov` from 6.00 through 20.75 seconds, while the shorter reference concentrates its strongest changes around 2.25–3.00 and 6.00 seconds. Capture speed is user-controlled and cannot define duration, but the distribution confirms that ART'hur's full-frame layers create repeated scene cuts instead of a smaller number of continuous spatial swings.
+10. **The fixed grid and oversized title are over-authored support elements.** They repeat unchanged across all ART'hur projects, suppress project-specific image character, and compete with the route. The reference spends its boldness on the moving world and marker, while navigation, grid lines, and metadata recede.
+
+### Corrective requirements from the video comparison
+
+- Replace the one-path/one-template model with per-project scene descriptors: route point, camera offset, image crop, image panel bounds, title position, title scale, tone, and neighboring-scene exposure.
+- Interpolate the scene camera and adjacent project descriptors continuously from scroll progress. Do not make a full-viewport cover opacity crossfade the primary morph.
+- Keep two neighboring project compositions partially mounted and spatially visible so the user can see where the marker came from and where it is going.
+- Compute route tangent from nearby SVG path points and rotate the ART'hur marker to face travel direction. Add one restrained locomotion cycle tied to traveled distance, not elapsed time, so it also reverses correctly.
+- Replace numbered circular nodes with quieter project-specific anchors. Node numbering may remain in the accessible index, not as the dominant visual language on the route.
+- Move active and neighboring typography with the scene descriptors. Avoid one large centered heading shared by every project.
+- Reduce the fixed grid, global shade, giant repeated title layer, and marker badge. Preserve contrast locally around essential copy instead of darkening every project identically.
+- Give each adjacent project pair its own transition composition while retaining one shared scroll engine.
+- Verify the forward and reverse path at quarter-interval scroll positions, not only at project nodes.
+- Treat the current `ART'hur.mov` as evidence of the gap, not as an approved visual state.
+
 ### Content assumptions
 
 - Populated Payload projects define timeline order.
