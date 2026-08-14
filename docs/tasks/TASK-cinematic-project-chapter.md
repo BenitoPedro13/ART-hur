@@ -181,8 +181,8 @@ pnpm dlx shadcn@latest add @react-bits/BlurText-TS-CSS
 ### Technical model
 
 ```text
-native document scroll → nearest project threshold / goto position
-        ↓ target changes
+small directional wheel/touch-scroll gesture → immediate previous/next goto
+        ↓ selected project changes after a short intent threshold
 previous index + selected index
         ↓ independent eased transition, 0 → 1
 sticky 100svh visual stage
@@ -195,18 +195,19 @@ sticky 100svh visual stage
         └── morphing active project metadata
 ```
 
-Scroll selection calculation:
+Scroll selection model:
 
 ```text
-sectionProgress = clamp(
-  (window.scrollY - sectionTop) /
-  (sectionHeight - viewportHeight),
-  0,
-  1
-)
+accumulate the signed scroll delta while the sticky timeline is active
 
-targetIndex = round(sectionProgress × (projectCount - 1))
+when abs(accumulatedDelta) crosses the small intent threshold:
+  targetIndex = currentIndex + sign(accumulatedDelta)
+  goto the target project's document anchor
+  reset the accumulator
+  begin the authored in-place visual transition
 ```
+
+The threshold exists only to distinguish intent from trackpad noise. It must be small enough that one modest wheel notch or short touch-scroll movement selects the adjacent project. The user must never need to scroll halfway through a project-sized document interval before anything happens.
 
 Transition model after `targetIndex` changes:
 
@@ -218,7 +219,7 @@ transitionProgress = ease(0 → 1 over the authored transition duration)
 on each ambient path tick:
   keep the route entering and leaving through the viewport edges
   continuously breathe the outer control points
-  preserve the registered middle anchor beneath the glyph
+  preserve the registered middle anchor at the exact viewport center beneath the glyph
   recalculate glyph point and tangent from the live path
 
 on each project transition tick:
@@ -255,7 +256,9 @@ When `prefers-reduced-motion: reduce` is active:
 - Keep a DOM fallback for reduced motion, failed initialization, context loss, and unsupported devices.
 - Do not load or autoplay every project video.
 - Preload only the current and adjacent project textures where practical.
-- Use one passive scroll listener only to calculate the discrete target index.
+- Use a small signed-delta intent accumulator while the sticky timeline is active.
+- One modest wheel notch or short touch-scroll gesture must trigger the adjacent project goto.
+- Synchronize the document to the selected project's anchor without scrubbing the visual transition.
 - Use one low-cost animation ticker for the continuously breathing path and attached glyph.
 - Layer the project transition envelope onto that same ticker rather than creating a second perpetual loop.
 - Cancel the transition, frame, and listener on unmount.
@@ -280,6 +283,7 @@ When `prefers-reduced-motion: reduce` is active:
 - No interactive carousel behavior inside the WebGL component
 - No horizontal camera or side-by-side project travel
 - No direct wheel-to-shader scrubbing after the selected project threshold is known
+- No long dead scroll interval before an adjacent project is selected
 - No full multi-project route or project nodes visible at once. The single local segment must still exit through both screen edges.
 - No copied MILEZ glyphs, Japanese marks, assets, curve, or exact transition timings
 - No Payload schema migration
@@ -320,7 +324,10 @@ This approach also satisfies the existing specification:
 - [ ] `git diff --check`
 - [ ] Timeline section uses native document scroll with no nested scroll container
 - [ ] Visual stage remains sticky for the project sequence
-- [ ] Glyph position changes continuously along the SVG path during normal-motion scrolling
+- [ ] One modest wheel notch or short touch-scroll gesture immediately selects the adjacent project
+- [ ] The document goto position synchronizes to that project without directly scrubbing the visual transition
+- [ ] The glyph route transform stays locked to the exact viewport center
+- [ ] Only the glyph's internal walker animates its walking cycle while idle
 - [ ] Scroll only selects a target project; the visual morph completes on its own authored easing
 - [ ] Holding scroll still after a threshold does not freeze a transition midway
 - [ ] Only one local path segment is visible, and it enters and exits through the left and right screen edges
