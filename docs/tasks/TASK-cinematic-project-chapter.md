@@ -274,6 +274,7 @@ Adopt the reference's frame-sequence mechanism without copying its logo, PNG fra
 - Flip the original ART'hur sequence horizontally when navigation direction reverses.
 - Advance frames only while a scroll-triggered project transition is active; return to and hold a neutral frame as soon as the transition completes.
 - The path outer edges may keep breathing while idle, but the walker itself must not keep walking when the user has stopped scrolling.
+- Render the route as explicit high-contrast Newsprint-white dots; do not inherit a foreground token that can resolve to black over the dark atmosphere.
 - Hold the neutral frame permanently under reduced motion.
 - Do not fetch, trace, bundle, or reproduce any `MILEZ_LOGO_walk` or `MILEZ_LOGO_disappear` image.
 
@@ -372,6 +373,7 @@ This approach also satisfies the existing specification:
 - [ ] Holding scroll still after a threshold does not freeze a transition midway
 - [ ] Only one local path segment is visible, and it enters and exits through the left and right screen edges
 - [ ] Path outer sections keep breathing while the selected project is idle
+- [ ] Dotted route remains visibly white over both black atmosphere and project imagery
 - [ ] Project transitions add a stronger directional swing while the middle anchor remains stable
 - [ ] Glyph position and tangent are recalculated after every ambient and transition path update
 - [ ] Glyph snaps to project nodes under reduced motion
