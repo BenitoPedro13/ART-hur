@@ -269,7 +269,7 @@ export default async function ProjectPage({
                 <Reveal
                   as="figure"
                   key={entry.id ?? media.id}
-                  className={`work-figure${slot.lift ? "work-figure-lift" : ""}`}
+                  className={`work-figure${slot.lift ? " work-figure-lift" : ""}`}
                 >
                   <Image
                     src={url}
