@@ -71,6 +71,24 @@ The 4 fps study changes the implementation target in several important ways:
 - Verify the forward and reverse path at quarter-interval scroll positions, not only at project nodes.
 - Treat the current `ART'hur.mov` as evidence of the gap, not as an approved visual state.
 
+### External component audit
+
+**React Bits `BlurText`** is approved for the compact index heading only.
+
+- **Storytelling job:** mark the transition from the immersive moving archive into the complete textual index, resolving the phrase like an image coming into focus.
+- **Intensity layer:** secondary index transition. It is not part of the timeline's primary moving-world sula.
+- **Existing regional sula:** the index has none. The walking glyph remains exclusive to the sticky timeline region.
+- **Keyboard and touch:** presentational text only, so it must not alter interaction or reading order.
+- **Reduced motion:** render the final text immediately with no blur or displacement.
+- **SSR:** preserve readable source text and avoid making the index dependent on animation hydration.
+- **Identity test:** re-token the component to ART'hur typography, timing, and neutral palette. Do not retain the React Bits demo treatment.
+
+Installation must use the official React Bits shadcn registry command documented by the current project:
+
+```bash
+pnpm dlx shadcn@latest add @react-bits/BlurText-TS-CSS
+```
+
 ### Content assumptions
 
 - Populated Payload projects define timeline order.
