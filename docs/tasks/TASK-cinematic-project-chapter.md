@@ -189,8 +189,8 @@ sticky 100svh visual stage
         ├── fixed centered DOM image fallback
         ├── fixed centered React Bits/OGL morph canvas
         ├── fixed centered background and typography layers
-        ├── local previous-to-selected SVG segment
-        ├── swinging outer path controls with stable middle anchor
+        ├── one local SVG segment exiting both viewport edges
+        ├── continuously breathing outer path controls with stable middle anchor
         ├── ART'hur glyph recalculated on the live path
         └── morphing active project metadata
 ```
@@ -215,10 +215,16 @@ fromIndex = previously selected project
 toIndex = targetIndex
 transitionProgress = ease(0 → 1 over the authored transition duration)
 
-on each transition tick:
+on each ambient path tick:
+  keep the route entering and leaving through the viewport edges
+  continuously breathe the outer control points
+  preserve the registered middle anchor beneath the glyph
+  recalculate glyph point and tangent from the live path
+
+on each project transition tick:
   update WebGL morph uniforms
   update centered background and text layers
-  update local SVG segment geometry
+  add a stronger directional swing to the ambient path motion
   recalculate glyph point and tangent from the live path
 ```
 
@@ -230,7 +236,7 @@ When `prefers-reduced-motion: reduce` is active:
 
 - preserve native scrolling and the complete timeline
 - change the selected project immediately at the threshold
-- snap the glyph and local path to the selected stable state
+- keep one static edge-to-edge path and snap the glyph to its selected stable state
 - switch backgrounds without shader displacement, path swing, scale, clip, blur, or filter interpolation
 - keep active title and metadata immediate
 - retain the compact index and all project access
@@ -238,7 +244,7 @@ When `prefers-reduced-motion: reduce` is active:
 ### Mobile behavior
 
 - Keep the same sticky timeline model.
-- Use a simplified but still curved path sized for the portrait viewport.
+- Use a simplified but still curved path that continues through both portrait viewport edges.
 - Keep the moving glyph and cross-morphing backgrounds.
 - Reduce peripheral labels and decorative grid lines before reducing the active project information.
 - Avoid horizontal overflow and avoid converting the design into stacked cards.
@@ -250,9 +256,11 @@ When `prefers-reduced-motion: reduce` is active:
 - Do not load or autoplay every project video.
 - Preload only the current and adjacent project textures where practical.
 - Use one passive scroll listener only to calculate the discrete target index.
-- Use one transition ticker only while a project transition is active.
+- Use one low-cost animation ticker for the continuously breathing path and attached glyph.
+- Layer the project transition envelope onto that same ticker rather than creating a second perpetual loop.
 - Cancel the transition, frame, and listener on unmount.
-- Pause all transition work while stable.
+- Pause the ambient ticker when the document is hidden and restart it without a phase jump.
+- Keep WebGL and typography transition work paused while the selected project is stable.
 - Keep React state changes to project selection boundaries.
 
 ### Intensity audit
@@ -272,7 +280,7 @@ When `prefers-reduced-motion: reduce` is active:
 - No interactive carousel behavior inside the WebGL component
 - No horizontal camera or side-by-side project travel
 - No direct wheel-to-shader scrubbing after the selected project threshold is known
-- No full multi-project route visible at once
+- No full multi-project route or project nodes visible at once. The single local segment must still exit through both screen edges.
 - No copied MILEZ glyphs, Japanese marks, assets, curve, or exact transition timings
 - No Payload schema migration
 - No deletion of inactive legacy desktop components
@@ -315,9 +323,10 @@ This approach also satisfies the existing specification:
 - [ ] Glyph position changes continuously along the SVG path during normal-motion scrolling
 - [ ] Scroll only selects a target project; the visual morph completes on its own authored easing
 - [ ] Holding scroll still after a threshold does not freeze a transition midway
-- [ ] Only the local previous-to-selected path segment is visible
-- [ ] Path borders swing while the middle anchor remains stable
-- [ ] Glyph position and tangent are recalculated after every live path update
+- [ ] Only one local path segment is visible, and it enters and exits through the left and right screen edges
+- [ ] Path outer sections keep breathing while the selected project is idle
+- [ ] Project transitions add a stronger directional swing while the middle anchor remains stable
+- [ ] Glyph position and tangent are recalculated after every ambient and transition path update
 - [ ] Glyph snaps to project nodes under reduced motion
 - [ ] Adjacent project backgrounds cross-morph continuously between nodes
 - [ ] Image canvas, full-stage background, title, and metadata remain centered at every quarter interval
