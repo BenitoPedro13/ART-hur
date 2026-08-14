@@ -256,6 +256,19 @@ Use the React Bits `RippleDistortion` component as a restrained interaction laye
 - Disable wave input and animation for reduced motion, touch-only interaction, failed WebGL initialization, hidden documents, and inactive hover state.
 - Keep the underlying MorphSlider/DOM image visible as the fallback at all times.
 
+### Original ART'hur walking sequence
+
+Adopt the reference's frame-sequence mechanism without copying its logo, PNG frames, disappearance assets, or exact silhouettes.
+
+- Build an original ART'hur walker as 15 layered inline-SVG frames.
+- Keep every frame registered to the same center point and reveal exactly one frame per walking tick.
+- Use authored body compression, lean, alternating feet, and subtle halo changes so the mark visibly walks rather than merely bobbing as one rigid shape.
+- Keep the outer walker group fixed at the exact viewport-center path anchor.
+- Rotate only the outer group to the live path tangent.
+- Flip the original ART'hur sequence horizontally when navigation direction reverses.
+- Advance frames continuously during normal motion and hold a neutral frame under reduced motion.
+- Do not fetch, trace, bundle, or reproduce any `MILEZ_LOGO_walk` or `MILEZ_LOGO_disappear` image.
+
 ### Mobile behavior
 
 - Keep the same sticky timeline model.
@@ -328,6 +341,7 @@ This approach also satisfies the existing specification:
 | `components/archive/archive-prototype.tsx`     | Implement scroll measurement, SVG path nodes, moving ART'hur glyph, adjacent background interpolation, active metadata, neighboring labels, and compact index navigation. |
 | `components/RippleDistortion.jsx`              | Add and adapt the React Bits hover distortion with inactive-loop suspension, reduced-motion handling, context cleanup, and the supplied JavaScript + CSS API.             |
 | `components/RippleDistortion.css`              | Scope the ripple canvas as a full-frame overlay without changing media-frame geometry.                                                                                    |
+| `components/archive/arthur-walker.tsx`         | Add the original 15-frame inline-SVG ART'hur walking sequence while preserving a shared center registration.                                                              |
 | `app/(frontend)/globals.css`                   | Replace carousel presentation rules with the sticky timeline stage, morphing atmosphere, responsive curve composition, and reduced-motion states.                         |
 | `README.md`                                    | Describe the scroll-linked timeline prototype and its reference relationship.                                                                                             |
 | `CLAUDE.md`                                    | Record the timeline as the current delivery architecture and explicitly reject translating MILEZ into a carousel.                                                         |
@@ -360,6 +374,10 @@ This approach also satisfies the existing specification:
 - [ ] RippleDistortion is hidden during project morph transitions and updates to the newly active hero afterward
 - [ ] RippleDistortion does not animate while inactive, reduced motion is active, or the document is hidden
 - [ ] The underlying project image remains visible if RippleDistortion cannot initialize
+- [ ] Exactly one of 15 original ART'hur walker frames is visible at a time
+- [ ] Walker frame index advances while idle without moving the outer center anchor
+- [ ] Reverse navigation flips the original walker while preserving the path tangent
+- [ ] No MILEZ walking/disappearance image or silhouette is copied into the repository
 - [ ] WebGL melt reverses deterministically when scrolling upward
 - [ ] DOM fallback remains visible if WebGL is unavailable or reduced motion is enabled
 - [ ] Only node-boundary changes trigger active-project React state updates
