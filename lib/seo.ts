@@ -129,15 +129,22 @@ export function buildMetadata({
       url: `/${locale}${path ? `/${path}` : ""}`,
       locale,
       alternateLocale: locales.filter((code) => code !== locale),
-      images,
+      /**
+       * Omitted entirely, not set to `undefined`, when there is no explicit
+       * image. Next only merges an `opengraph-image` file-convention route in
+       * when the field is absent — present-but-undefined counts as set, and
+       * the generated card silently never attaches.
+       */
+      ...(images ? { images } : {}),
     },
     twitter: {
       // `summary_large_image` is the only card that does the work justice; a
-      // portfolio previewing as a thumbnail defeats the point.
-      card: images ? "summary_large_image" : "summary",
+      // portfolio previewing as a thumbnail defeats the point. Routes with a
+      // generated card inherit theirs from the file convention.
+      card: "summary_large_image",
       title: title ?? siteName,
       description: resolvedDescription,
-      images: resolvedImage ? [resolvedImage] : undefined,
+      ...(resolvedImage ? { images: [resolvedImage] } : {}),
     },
   }
 }

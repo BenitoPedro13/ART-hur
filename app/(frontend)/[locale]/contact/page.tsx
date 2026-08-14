@@ -7,7 +7,6 @@ import { SiteHeader } from "@/components/site/site-header"
 import { Slate, slateRows } from "@/components/site/slate"
 import { compact, StructuredData } from "@/components/site/structured-data"
 import { getDictionary, isLocale } from "@/lib/i18n"
-import { mediaOgSize, mediaUrl } from "@/lib/media"
 import { getSite } from "@/lib/payload"
 import { buildMetadata, personSchema, siteUrl } from "@/lib/seo"
 
@@ -40,9 +39,7 @@ export async function generateMetadata({
       site.contact?.intro ??
       site.contact?.availability ??
       site.seo?.siteDescription,
-    image: mediaUrl(site.seo?.ogImage, "hero"),
-    imageAlt: site.ownerName,
-    ...mediaOgSize(site.seo?.ogImage),
+    // No `image`: opengraph-image.tsx supplies an authored card.
   })
 }
 

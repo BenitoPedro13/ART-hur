@@ -4,7 +4,6 @@ import { notFound } from "next/navigation"
 import { ArchivePrototype } from "@/components/archive/archive-prototype"
 import { compact, StructuredData } from "@/components/site/structured-data"
 import { isLocale } from "@/lib/i18n"
-import { mediaOgSize, mediaUrl } from "@/lib/media"
 import { getDesktopItems, getSite } from "@/lib/payload"
 import { selectedProjects } from "@/lib/projects"
 import { buildMetadata, personSchema, websiteSchema } from "@/lib/seo"
@@ -39,9 +38,8 @@ export async function generateMetadata({
     path: "",
     site,
     description: site.tagline ?? site.seo?.siteDescription,
-    image: mediaUrl(site.seo?.ogImage, "hero"),
-    imageAlt: site.ownerName,
-    ...mediaOgSize(site.seo?.ogImage),
+    // No `image`: opengraph-image.tsx supplies an authored card, and an
+    // explicit value here would take precedence over the file convention.
   })
 
   // The home is the one page whose title should not gain the "— ART'hur"

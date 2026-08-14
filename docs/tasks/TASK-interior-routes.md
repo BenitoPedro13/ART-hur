@@ -287,6 +287,13 @@ Delivered beyond the original plan:
 
 ### Browser behaviours worth not rediscovering
 
+- **`openGraph.images: undefined` still counts as set.** Next only merges an
+  `opengraph-image` file-convention route in when the field is absent, so a
+  present-but-undefined key means the generated card silently never attaches.
+- **Satori renders a variable font at its default instance.** Google Fonts
+  serves Archivo as a variable font by default, which would have set the
+  wordmark at Regular; a static cut is fetched with a plain `curl` user agent
+  and committed under `assets/fonts/`.
 - **`robots.ts` must live at the app root.** Inside `app/(frontend)/` Next
   registers `sitemap.ts` but silently skips `robots.ts`; the request then falls
   through to `[locale]` and 404s. Confirmed against the build manifest.
