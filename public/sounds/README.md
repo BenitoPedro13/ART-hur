@@ -17,14 +17,23 @@ bed additionally waits for the first real gesture, because browsers refuse
 programmatic playback before one, and it stays off entirely under
 `prefers-reduced-motion`.
 
-## `ambient.mp3` is a placeholder
+## `ambient.mp3`
 
-The current file is a CC0 interface/ambient track. It is legally fine to ship,
-but it is **not** the intended music: it is a neutral bed standing in until
-Arthur's own choice lands.
+Arthur's own track: 3m40s, encoded to 96 kbps mono (2.5 MB).
 
-Replace it by dropping a new `ambient.mp3` in this folder. No code change, no
-rebuild step beyond the usual one.
+It was supplied at 256 kbps stereo (6.7 MB), which is far more than a bed
+playing at volume 0.16 can carry — the difference is inaudible at that level
+and the saving is over 4 MB on a file some visitors will download. The original
+is preserved in git history at commit `87bb199` if a higher-quality master is
+ever wanted.
+
+Re-encode after any future swap:
+
+```bash
+ffmpeg -i input.mp3 -ac 1 -b:a 96k -ar 44100 public/sounds/ambient.mp3
+```
+
+Replacing the file needs no code change.
 
 ## Licensing
 
