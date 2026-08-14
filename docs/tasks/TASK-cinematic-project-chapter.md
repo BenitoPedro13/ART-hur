@@ -261,6 +261,8 @@ Use the React Bits `RippleDistortion` component as a restrained interaction laye
 Adopt the reference's frame-sequence mechanism without copying its logo, PNG frames, disappearance assets, or exact silhouettes.
 
 - Build an original ART'hur walker as 15 layered inline-SVG frames.
+- Base the temporary identity on `芸` (`gei`, art / creative craft), rendered as a bold white Japanese character rather than tracing the reference mark.
+- Give `芸` two expressive articulated legs and one restrained ART'hur orange incision so it reads as a character in motion and remains connected to the Living Tag system.
 - Keep every frame registered to the same center point and reveal exactly one frame per walking tick.
 - Use authored body compression, lean, alternating feet, and subtle halo changes so the mark visibly walks rather than merely bobbing as one rigid shape.
 - Keep the outer walker group fixed at the exact viewport-center path anchor.
@@ -375,6 +377,7 @@ This approach also satisfies the existing specification:
 - [ ] RippleDistortion does not animate while inactive, reduced motion is active, or the document is hidden
 - [ ] The underlying project image remains visible if RippleDistortion cannot initialize
 - [ ] Exactly one of 15 original ART'hur walker frames is visible at a time
+- [ ] The walker visibly reads as the Japanese `芸` art glyph with two legs and an ART'hur orange incision
 - [ ] Walker frame index advances while idle without moving the outer center anchor
 - [ ] Reverse navigation flips the original walker while preserving the path tangent
 - [ ] No MILEZ walking/disappearance image or silhouette is copied into the repository
