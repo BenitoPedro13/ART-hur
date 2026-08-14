@@ -242,6 +242,20 @@ When `prefers-reduced-motion: reduce` is active:
 - keep active title and metadata immediate
 - retain the compact index and all project access
 
+### Active-image hover distortion
+
+Use the React Bits `RippleDistortion` component as a restrained interaction layer over the centered active project image.
+
+- `MorphSlider` remains the sole project-to-project transition renderer.
+- Mount the ripple layer inside the fixed centered media frame, above the stable MorphSlider image.
+- Reveal and enable it only while a fine pointer hovers the media frame and no project transition is active.
+- Hide it before a project transition starts so it cannot replace or obscure the authored cross-project morph.
+- Feed it only the currently selected project's resolved hero image.
+- Tune strength, swirl, rings, dispersion, tint, and glint to ART'hur's restrained marked-frequency language rather than the React Bits demo defaults.
+- Preserve image focal clarity. The hover should feel like a local liquid disturbance, not a permanent full-image filter.
+- Disable wave input and animation for reduced motion, touch-only interaction, failed WebGL initialization, hidden documents, and inactive hover state.
+- Keep the underlying MorphSlider/DOM image visible as the fallback at all times.
+
 ### Mobile behavior
 
 - Keep the same sticky timeline model.
@@ -253,6 +267,7 @@ When `prefers-reduced-motion: reduce` is active:
 ### Performance boundaries
 
 - WebGL is approved for the centered React Bits morph canvas.
+- A second OGL canvas is approved only as the active-image hover ripple and must remain idle or unmounted while inactive.
 - Keep a DOM fallback for reduced motion, failed initialization, context loss, and unsupported devices.
 - Do not load or autoplay every project video.
 - Preload only the current and adjacent project textures where practical.
@@ -311,6 +326,8 @@ This approach also satisfies the existing specification:
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `docs/tasks/TASK-cinematic-project-chapter.md` | Replace the incorrect chapter plan with this corrected scroll-timeline plan before implementation.                                                                        |
 | `components/archive/archive-prototype.tsx`     | Implement scroll measurement, SVG path nodes, moving ART'hur glyph, adjacent background interpolation, active metadata, neighboring labels, and compact index navigation. |
+| `components/RippleDistortion.jsx`              | Add and adapt the React Bits hover distortion with inactive-loop suspension, reduced-motion handling, context cleanup, and the supplied JavaScript + CSS API.             |
+| `components/RippleDistortion.css`              | Scope the ripple canvas as a full-frame overlay without changing media-frame geometry.                                                                                    |
 | `app/(frontend)/globals.css`                   | Replace carousel presentation rules with the sticky timeline stage, morphing atmosphere, responsive curve composition, and reduced-motion states.                         |
 | `README.md`                                    | Describe the scroll-linked timeline prototype and its reference relationship.                                                                                             |
 | `CLAUDE.md`                                    | Record the timeline as the current delivery architecture and explicitly reject translating MILEZ into a carousel.                                                         |
@@ -339,6 +356,10 @@ This approach also satisfies the existing specification:
 - [ ] Image canvas, full-stage background, title, and metadata remain centered at every quarter interval
 - [ ] No project card, image panel, or camera translates laterally with global scroll progress
 - [ ] React Bits MorphSlider source is adapted to controlled scroll uniforms with no carousel controls, autoplay, drag, or carousel ARIA
+- [ ] Hovering the stable centered project image reveals the React Bits RippleDistortion layer
+- [ ] RippleDistortion is hidden during project morph transitions and updates to the newly active hero afterward
+- [ ] RippleDistortion does not animate while inactive, reduced motion is active, or the document is hidden
+- [ ] The underlying project image remains visible if RippleDistortion cannot initialize
 - [ ] WebGL melt reverses deterministically when scrolling upward
 - [ ] DOM fallback remains visible if WebGL is unavailable or reduced motion is enabled
 - [ ] Only node-boundary changes trigger active-project React state updates
