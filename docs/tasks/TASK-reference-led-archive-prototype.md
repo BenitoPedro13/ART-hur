@@ -39,28 +39,31 @@ Keeping the CMS and data model while replacing the visual shell limits technical
 
 ## 4. Affected files
 
-| File | Change |
-|---|---|
-| `CLAUDE.md` | Replace the copied Blessed Moon guide with ART'hur-specific rules and make MILEZ the primary visual reference. |
-| `docs/tasks/TASK-reference-led-archive-prototype.md` | Record this implementation plan, assumptions, scope, and verification. |
-| `app/(frontend)/[locale]/page.tsx` | Render the new archive experience while preserving server-side Payload fetching. |
-| `components/archive/archive-prototype.tsx` | Add the narrow client boundary for active-project sequencing and accessible controls. |
-| `app/(frontend)/globals.css` | Replace desktop-oriented page atmosphere with the archive scene, transitions, responsive behavior, and reduced-motion handling. |
-| `README.md` | Update the public implementation status and source-of-truth guidance. |
+| File                                                 | Change                                                                                                                          |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `CLAUDE.md`                                          | Replace the copied Blessed Moon guide with ART'hur-specific rules and make MILEZ the primary visual reference.                  |
+| `docs/tasks/TASK-reference-led-archive-prototype.md` | Record this implementation plan, assumptions, scope, and verification.                                                          |
+| `app/(frontend)/[locale]/page.tsx`                   | Render the new archive experience while preserving server-side Payload fetching.                                                |
+| `components/archive/archive-prototype.tsx`           | Add the narrow client boundary for active-project sequencing and accessible controls.                                           |
+| `app/(frontend)/globals.css`                         | Replace desktop-oriented page atmosphere with the archive scene, transitions, responsive behavior, and reduced-motion handling. |
+| `.prettierrc`                                        | Point the Tailwind formatter at the repository's actual global stylesheet path.                                                 |
+| `README.md`                                          | Update the public implementation status and source-of-truth guidance.                                                           |
 
 ## Verification
 
-- [ ] `pnpm typecheck`
-- [ ] `pnpm lint`
-- [ ] `pnpm build`
-- [ ] `git diff --check`
-- [ ] Home no longer renders lock screen, desktop icons, calendar, dock, or window chrome
-- [ ] Project controls are keyboard reachable and expose an active state
-- [ ] Project title, year, role/credits, and media remain visible with reduced motion
-- [ ] Mobile composition does not recreate the desktop metaphor
-- [ ] Empty or unpopulated project relationships fail gracefully
-- [ ] No local reference recording is modified or committed
+- [x] `pnpm typecheck`
+- [x] `pnpm lint`
+- [x] `pnpm build`
+- [x] `git diff --check`
+- [x] Home no longer renders lock screen, desktop icons, calendar, dock, or window chrome
+- [x] Project controls are keyboard reachable and expose an active state
+- [x] Project title, year, role/credits, and media remain visible with reduced motion
+- [x] Mobile composition does not recreate the desktop metaphor
+- [x] Empty or unpopulated project relationships fail gracefully
+- [x] No local reference recording is modified or committed
 
 ## Outcome
 
-Pending implementation and visual verification.
+Implemented and browser-verified at desktop and mobile widths. The active home route now presents Payload projects as a layered editorial archive scene rather than a simulated desktop. Project changes share a directional title/media cut, the archive track exposes the full sequence, reduced motion removes the transition animations, and the existing CMS remains the source of project media and metadata.
+
+The prototype was tested against the repository's current real Payload data. Final art direction still depends on confirmed project narratives, credits, and Arthur-authored identity assets.

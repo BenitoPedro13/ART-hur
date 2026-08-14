@@ -1,14 +1,24 @@
 # ART'hur
 
-Arthur's immersive portfolio, built as a branded reiteration of `portfolio-template`.
+Arthur's immersive portfolio, using `portfolio-template` as a Payload CMS and Next.js foundation rather than as the public visual design.
 
 The visual direction is **Marked Frequencies**: a living archive with rhythm, built from contact sheets, frame metadata, street-culture marks, restrained motion, and one assertive ART'hur tag per visual region.
 
 ## Source of truth
 
 - Brand and experience spec: `docs/BRAND-AND-EXPERIENCE-SPEC.md`
-- Workflow rules copied from Blessed Moon: `CLAUDE.md`
+- ART'hur repository and implementation guide: `CLAUDE.md`
 - App foundation: Next.js App Router, Payload CMS, Tailwind CSS v4, shadcn-compatible components
+
+## Current prototype
+
+The inherited desktop, lock screen, calendar, dock, icons, and window presentation has been removed from the active home route. The current selected-work prototype is led by:
+
+- `https://milez.jp/archive/` and `docs/MILEZ-portfolio.mov` for archive composition, negative space, layered media, and typographic confidence
+- `https://ykproduce.co.jp/` and `docs/YK-PRODUCE-portfolio.mov` for media-first staging, contrast, and cinematic pacing
+- ART'hur's Marked Frequencies palette, production metadata, archive tracks, and Living Tag for its own identity
+
+The Payload project data is still provisional seed content. The interface is an identity and transition prototype, not a claim that the placeholder projects or media are final.
 
 ## First run
 

@@ -5,144 +5,940 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-    /* ART'hur semantic colour roles, mapped from Marked Frequencies. */
-    --background: #0b0b0a; /* Vinyl Black */
-    --foreground: #e9e2d2; /* Newsprint */
-    --card: #141310;
-    --card-foreground: #e9e2d2;
-    --popover: #141310;
-    --popover-foreground: #e9e2d2;
-    --primary: #d83823; /* Oxide Red */
-    --primary-foreground: #fff7e8;
-    --secondary: #1d1b17;
-    --secondary-foreground: #e9e2d2;
-    --muted: #1a1916;
-    --muted-foreground: #9d9a92; /* Concrete */
-    --accent: #e7c64a; /* Tape Yellow */
-    --accent-foreground: #0b0b0a;
-    --destructive: #ff4d3a;
-    --border: rgb(233 226 210 / 0.14);
-    --input: rgb(233 226 210 / 0.18);
-    --ring: #4b61ff; /* Flash Blue */
-    --chart-1: #d83823;
-    --chart-2: #e7c64a;
-    --chart-3: #4b61ff;
-    --chart-4: #9d9a92;
-    --chart-5: #e9e2d2;
-    --radius: 0.35rem;
-    --sidebar: #141310;
-    --sidebar-foreground: #e9e2d2;
-    --sidebar-primary: #d83823;
-    --sidebar-primary-foreground: #fff7e8;
-    --sidebar-accent: #1d1b17;
-    --sidebar-accent-foreground: #e9e2d2;
-    --sidebar-border: rgb(233 226 210 / 0.14);
-    --sidebar-ring: #4b61ff;
+  /* ART'hur semantic colour roles, mapped from Marked Frequencies. */
+  --background: #0b0b0a; /* Vinyl Black */
+  --foreground: #e9e2d2; /* Newsprint */
+  --card: #141310;
+  --card-foreground: #e9e2d2;
+  --popover: #141310;
+  --popover-foreground: #e9e2d2;
+  --primary: #d83823; /* Oxide Red */
+  --primary-foreground: #fff7e8;
+  --secondary: #1d1b17;
+  --secondary-foreground: #e9e2d2;
+  --muted: #1a1916;
+  --muted-foreground: #9d9a92; /* Concrete */
+  --accent: #e7c64a; /* Tape Yellow */
+  --accent-foreground: #0b0b0a;
+  --destructive: #ff4d3a;
+  --border: rgb(233 226 210 / 0.14);
+  --input: rgb(233 226 210 / 0.18);
+  --ring: #4b61ff; /* Flash Blue */
+  --chart-1: #d83823;
+  --chart-2: #e7c64a;
+  --chart-3: #4b61ff;
+  --chart-4: #9d9a92;
+  --chart-5: #e9e2d2;
+  --radius: 0.35rem;
+  --sidebar: #141310;
+  --sidebar-foreground: #e9e2d2;
+  --sidebar-primary: #d83823;
+  --sidebar-primary-foreground: #fff7e8;
+  --sidebar-accent: #1d1b17;
+  --sidebar-accent-foreground: #e9e2d2;
+  --sidebar-border: rgb(233 226 210 / 0.14);
+  --sidebar-ring: #4b61ff;
 }
 
 .dark {
-    --background: #0b0b0a;
-    --foreground: #e9e2d2;
-    --card: #141310;
-    --card-foreground: #e9e2d2;
-    --popover: #141310;
-    --popover-foreground: #e9e2d2;
-    --primary: #d83823;
-    --primary-foreground: #fff7e8;
-    --secondary: #1d1b17;
-    --secondary-foreground: #e9e2d2;
-    --muted: #1a1916;
-    --muted-foreground: #9d9a92;
-    --accent: #e7c64a;
-    --accent-foreground: #0b0b0a;
-    --destructive: #ff4d3a;
-    --border: rgb(233 226 210 / 0.14);
-    --input: rgb(233 226 210 / 0.18);
-    --ring: #4b61ff;
-    --chart-1: #d83823;
-    --chart-2: #e7c64a;
-    --chart-3: #4b61ff;
-    --chart-4: #9d9a92;
-    --chart-5: #e9e2d2;
-    --sidebar: #141310;
-    --sidebar-foreground: #e9e2d2;
-    --sidebar-primary: #d83823;
-    --sidebar-primary-foreground: #fff7e8;
-    --sidebar-accent: #1d1b17;
-    --sidebar-accent-foreground: #e9e2d2;
-    --sidebar-border: rgb(233 226 210 / 0.14);
-    --sidebar-ring: #4b61ff;
+  --background: #0b0b0a;
+  --foreground: #e9e2d2;
+  --card: #141310;
+  --card-foreground: #e9e2d2;
+  --popover: #141310;
+  --popover-foreground: #e9e2d2;
+  --primary: #d83823;
+  --primary-foreground: #fff7e8;
+  --secondary: #1d1b17;
+  --secondary-foreground: #e9e2d2;
+  --muted: #1a1916;
+  --muted-foreground: #9d9a92;
+  --accent: #e7c64a;
+  --accent-foreground: #0b0b0a;
+  --destructive: #ff4d3a;
+  --border: rgb(233 226 210 / 0.14);
+  --input: rgb(233 226 210 / 0.18);
+  --ring: #4b61ff;
+  --chart-1: #d83823;
+  --chart-2: #e7c64a;
+  --chart-3: #4b61ff;
+  --chart-4: #9d9a92;
+  --chart-5: #e9e2d2;
+  --sidebar: #141310;
+  --sidebar-foreground: #e9e2d2;
+  --sidebar-primary: #d83823;
+  --sidebar-primary-foreground: #fff7e8;
+  --sidebar-accent: #1d1b17;
+  --sidebar-accent-foreground: #e9e2d2;
+  --sidebar-border: rgb(233 226 210 / 0.14);
+  --sidebar-ring: #4b61ff;
 }
 
 @theme inline {
-    --font-sans: var(--font-sans);
-    --font-heading: var(--font-heading);
-    --font-mono: var(--font-mono);
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-foreground: var(--foreground);
-    --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
+  --font-mono: var(--font-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 
-    /* --- Archive shell surface -----------------------------------------
+  /* --- Archive shell surface -----------------------------------------
        Atmosphere stays behind the work. Core controls recede. */
-    --color-void: #0b0b0a;
-    --color-glass: rgb(20 19 16 / 0.72);
-    --color-glass-edge: rgb(233 226 210 / 0.16);
-    --color-signal: #d83823;
-    --color-tape: #e7c64a;
-    --color-flash: #4b61ff;
+  --color-void: #0b0b0a;
+  --color-glass: rgb(20 19 16 / 0.72);
+  --color-glass-edge: rgb(233 226 210 / 0.16);
+  --color-signal: #d83823;
+  --color-tape: #e7c64a;
+  --color-flash: #4b61ff;
 }
 
 @theme {
-    /* Windows and project cards should cut like an edit, then settle. */
-    --ease-window: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Windows and project cards should cut like an edit, then settle. */
+  --ease-window: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
     @apply bg-background text-foreground;
-    background-image: radial-gradient(circle at 18% 12%, rgb(216 56 35 / 0.12), transparent 32%), radial-gradient(circle at 82% 70%, rgb(75 97 255 / 0.08), transparent 30%);
-    }
+    margin: 0;
+    background: var(--background);
+  }
   html {
     @apply font-sans;
+  }
+
+  /* --------------------------------------------------------------------------
+   Marked Frequencies archive prototype
+
+   MILEZ informs the quiet editorial frame and layered project scene. YK
+   Produce informs the media scale, contrast, and cut-like state changes. The
+   palette, metadata language, and Living Tag remain specific to ART'hur.
+   -------------------------------------------------------------------------- */
+
+  .archive-shell {
+    position: relative;
+    isolation: isolate;
+    min-height: 100svh;
+    overflow: clip;
+    background: var(--background);
+    color: var(--foreground);
+  }
+
+  .archive-shell::before {
+    position: fixed;
+    z-index: 20;
+    inset: 0;
+    pointer-events: none;
+    content: "";
+    opacity: 0.18;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+    mix-blend-mode: soft-light;
+  }
+
+  .archive-header {
+    position: fixed;
+    z-index: 30;
+    top: 0;
+    right: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    min-height: 4.5rem;
+    padding: 0 2rem;
+    border-bottom: 1px solid rgb(233 226 210 / 0.14);
+    background: linear-gradient(
+      to bottom,
+      rgb(11 11 10 / 0.94),
+      rgb(11 11 10 / 0.62) 72%,
+      transparent
+    );
+    backdrop-filter: blur(12px);
+  }
+
+  .archive-brand {
+    width: fit-content;
+    color: var(--foreground);
+    text-decoration: none;
+  }
+
+  .archive-header-caption {
+    font-size: 0.62rem;
+    color: rgb(233 226 210 / 0.54);
+  }
+
+  .archive-header-nav {
+    display: flex;
+    justify-content: flex-end;
+    gap: clamp(1rem, 2vw, 2.25rem);
+    font-size: 0.62rem;
+  }
+
+  .archive-header-nav a,
+  .archive-text-link {
+    color: inherit;
+    text-decoration: none;
+    transition: color 180ms ease;
+  }
+
+  .archive-header-nav a:hover,
+  .archive-header-nav a:focus-visible,
+  .archive-text-link:hover,
+  .archive-text-link:focus-visible {
+    color: var(--accent);
+  }
+
+  .archive-stage {
+    position: relative;
+    display: grid;
+    min-height: 100svh;
+    overflow: hidden;
+    padding: 4.5rem 2rem 1.5rem;
+    background: var(--background);
+  }
+
+  .archive-atmosphere {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    overflow: hidden;
+    background: var(--background);
+  }
+
+  .archive-atmosphere::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    background:
+      linear-gradient(
+        90deg,
+        var(--background) 0%,
+        transparent 28%,
+        transparent 72%,
+        var(--background) 100%
+      ),
+      linear-gradient(
+        180deg,
+        var(--background) 0%,
+        transparent 25%,
+        transparent 68%,
+        var(--background) 100%
+      ),
+      rgb(11 11 10 / 0.4);
+  }
+
+  .archive-atmosphere-image {
+    scale: 1.12;
+    object-fit: cover;
+    opacity: 0.3;
+    filter: grayscale(1) contrast(1.55) brightness(0.55);
+    animation: archive-atmosphere-in 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .archive-grid {
+    position: absolute;
+    z-index: 1;
+    inset: 4.5rem 2rem 1.5rem;
+    border-right: 1px solid rgb(233 226 210 / 0.1);
+    border-left: 1px solid rgb(233 226 210 / 0.1);
+    background-image:
+      linear-gradient(
+        to right,
+        transparent calc(25% - 0.5px),
+        rgb(233 226 210 / 0.08) 25%,
+        transparent calc(25% + 0.5px)
+      ),
+      linear-gradient(
+        to right,
+        transparent calc(50% - 0.5px),
+        rgb(233 226 210 / 0.08) 50%,
+        transparent calc(50% + 0.5px)
+      ),
+      linear-gradient(
+        to right,
+        transparent calc(75% - 0.5px),
+        rgb(233 226 210 / 0.08) 75%,
+        transparent calc(75% + 0.5px)
+      );
+  }
+
+  .archive-coordinate {
+    position: absolute;
+    z-index: 5;
+    top: 50%;
+    display: flex;
+    gap: 2rem;
+    font-size: 0.56rem;
+    color: rgb(233 226 210 / 0.42);
+    writing-mode: vertical-rl;
+  }
+
+  .archive-coordinate-left {
+    left: 0.55rem;
+    transform: translateY(-50%) rotate(180deg);
+  }
+
+  .archive-coordinate-right {
+    right: 0.55rem;
+    transform: translateY(-50%);
+  }
+
+  .archive-title-block {
+    position: absolute;
+    z-index: 2;
+    top: 17%;
+    right: 5.5vw;
+    left: 5.5vw;
+    pointer-events: none;
+    animation: archive-title-next 720ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .archive-shell[data-direction="previous"] .archive-title-block {
+    animation-name: archive-title-previous;
+  }
+
+  .archive-kicker {
+    margin: 0 0 0.75rem 0.45rem;
+    font-size: 0.58rem;
+    color: var(--accent);
+  }
+
+  .archive-title {
+    max-width: 11ch;
+    margin: 0;
+    font-size: clamp(4.75rem, 12.5vw, 13.5rem);
+    font-weight: 800;
+    line-height: 0.76;
+    overflow-wrap: anywhere;
+    text-transform: uppercase;
+    color: var(--foreground);
+    text-wrap: balance;
+  }
+
+  .archive-media-frame {
+    position: absolute;
+    z-index: 3;
+    top: 53%;
+    left: 50%;
+    width: min(64vw, 74rem);
+    height: min(53vh, 39rem);
+    transform: translate(-50%, -50%);
+    animation: archive-wipe-next 780ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .archive-shell[data-direction="previous"] .archive-media-frame {
+    animation-name: archive-wipe-previous;
+  }
+
+  /* The archive is a sequence, not one card template with changing content.
+     Three restrained compositions rotate with the project order while keeping
+     the same controls and reading hierarchy. */
+  .archive-shell[data-variant="1"] .archive-media-frame {
+    top: 55%;
+    left: 62%;
+    width: min(52vw, 60rem);
+    height: min(59vh, 43rem);
+  }
+
+  .archive-shell[data-variant="1"] .archive-title {
+    max-width: 7ch;
+  }
+
+  .archive-shell[data-variant="2"] .archive-title-block {
+    right: 5.5vw;
+    left: auto;
+    width: min(88vw, 80rem);
+    text-align: right;
+  }
+
+  .archive-shell[data-variant="2"] .archive-title {
+    max-width: 8ch;
+    margin-left: auto;
+  }
+
+  .archive-shell[data-variant="2"] .archive-media-frame {
+    top: 57%;
+    width: min(74vw, 82rem);
+    height: min(44vh, 32rem);
+  }
+
+  .archive-media-crop {
+    position: absolute;
+    inset: 0.65rem;
+    overflow: hidden;
+    background: var(--muted);
+    box-shadow: 0 2.5rem 8rem rgb(0 0 0 / 0.58);
+  }
+
+  .archive-media-crop::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, transparent 68%, rgb(11 11 10 / 0.22)),
+      linear-gradient(90deg, rgb(216 56 35 / 0.08), transparent 34%);
+    mix-blend-mode: multiply;
+  }
+
+  .archive-media-image {
+    object-fit: cover;
+    filter: saturate(0.98) contrast(1.02);
+    transform: scale(1.002);
+  }
+
+  .archive-media-missing {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    place-items: center;
+    font-size: 0.65rem;
+    color: var(--muted-foreground);
+  }
+
+  .archive-crop-mark {
+    position: absolute;
+    width: 1.15rem;
+    height: 1.15rem;
+    border-color: var(--accent);
+    opacity: 0.9;
+  }
+
+  .archive-crop-mark-tl {
+    top: 0;
+    left: 0;
+    border-top: 1px solid;
+    border-left: 1px solid;
+  }
+
+  .archive-crop-mark-tr {
+    top: 0;
+    right: 0;
+    border-top: 1px solid;
+    border-right: 1px solid;
+  }
+
+  .archive-crop-mark-bl {
+    bottom: 0;
+    left: 0;
+    border-bottom: 1px solid;
+    border-left: 1px solid;
+  }
+
+  .archive-crop-mark-br {
+    right: 0;
+    bottom: 0;
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+  }
+
+  .archive-project-data {
+    position: absolute;
+    z-index: 6;
+    right: 2rem;
+    bottom: 1.5rem;
+    left: 2rem;
+    display: grid;
+    grid-template-columns:
+      5rem minmax(9rem, 1fr) minmax(5rem, 0.45fr) minmax(10rem, 1.2fr)
+      10rem;
+    gap: clamp(1rem, 2vw, 2.5rem);
+    align-items: end;
+    min-height: 5rem;
+    padding: 1rem 12rem 0 0;
+    border-top: 1px solid rgb(233 226 210 / 0.22);
+    font-size: 0.76rem;
+    color: rgb(233 226 210 / 0.82);
+    animation: archive-data-in 720ms 100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .archive-project-data p {
+    margin: 0;
+  }
+
+  .archive-project-number {
+    font-size: 2.4rem;
+    line-height: 0.9;
+    color: var(--primary);
+  }
+
+  .archive-data-label {
+    margin-bottom: 0.38rem !important;
+    font-size: 0.54rem;
+    color: rgb(233 226 210 / 0.38);
+  }
+
+  .archive-stage-controls {
+    position: absolute;
+    z-index: 8;
+    right: 2rem;
+    bottom: 2rem;
+    display: grid;
+    grid-template-columns: 2.75rem auto 2.75rem;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--foreground);
+  }
+
+  .archive-stage-controls button {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    cursor: pointer;
+    border: 1px solid rgb(233 226 210 / 0.24);
+    border-radius: 50%;
+    background: rgb(11 11 10 / 0.78);
+    color: inherit;
+    place-items: center;
+    transition:
+      color 180ms ease,
+      border-color 180ms ease,
+      background 180ms ease;
+  }
+
+  .archive-stage-controls button:hover:not(:disabled),
+  .archive-stage-controls button:focus-visible {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  .archive-stage-controls button:disabled {
+    cursor: default;
+    opacity: 0.35;
+  }
+
+  .archive-stage-controls p {
+    margin: 0;
+    font-size: 0.54rem;
+    color: rgb(233 226 210 / 0.48);
+  }
+
+  .archive-index {
+    position: relative;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: minmax(15rem, 0.6fr) minmax(0, 1.4fr);
+    gap: clamp(3rem, 8vw, 10rem);
+    min-height: 70svh;
+    padding: clamp(5rem, 10vw, 10rem) 2rem 4rem;
+    background: var(--foreground);
+    color: var(--background);
+  }
+
+  .archive-index-intro {
+    position: sticky;
+    top: 7rem;
+    align-self: start;
+    max-width: 28rem;
+  }
+
+  .archive-index-intro .font-data {
+    margin: 0 0 1rem;
+    font-size: 0.62rem;
+    color: rgb(11 11 10 / 0.48);
+  }
+
+  .archive-index-intro p:last-child {
+    margin: 0;
+    font-size: clamp(2rem, 4.2vw, 4.5rem);
+    line-height: 0.98;
+    letter-spacing: -0.055em;
+    text-wrap: balance;
+  }
+
+  .archive-track-list {
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid rgb(11 11 10 / 0.25);
+    list-style: none;
+  }
+
+  .archive-track {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr 5rem 5rem;
+    gap: 1rem;
+    align-items: center;
+    width: 100%;
+    min-height: 6.5rem;
+    padding: 0;
+    cursor: pointer;
+    border: 0;
+    border-bottom: 1px solid rgb(11 11 10 / 0.25);
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    transition:
+      color 200ms ease,
+      padding 260ms cubic-bezier(0.16, 1, 0.3, 1),
+      background 200ms ease;
+  }
+
+  .archive-track:hover,
+  .archive-track:focus-visible,
+  .archive-track[aria-current="true"] {
+    padding-right: 1rem;
+    padding-left: 1rem;
+    background: var(--background);
+    color: var(--foreground);
+  }
+
+  .archive-track-index,
+  .archive-track-year,
+  .archive-track-state {
+    font-size: 0.58rem;
+  }
+
+  .archive-track-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.4rem, 2.6vw, 2.75rem);
+    font-weight: 650;
+    line-height: 0.92;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+  }
+
+  .archive-track-state {
+    text-align: right;
+  }
+
+  .archive-empty {
+    display: grid;
+    min-height: 100svh;
+    padding: 2rem;
+    place-content: center;
+    gap: 2rem;
+    text-align: center;
+  }
+
+  .archive-empty p {
+    margin: 0;
+    color: var(--muted-foreground);
+  }
+
+  @keyframes archive-wipe-next {
+    from {
+      clip-path: inset(0 100% 0 0);
+      transform: translate(-48%, -50%);
     }
+    to {
+      clip-path: inset(0);
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  @keyframes archive-wipe-previous {
+    from {
+      clip-path: inset(0 0 0 100%);
+      transform: translate(-52%, -50%);
+    }
+    to {
+      clip-path: inset(0);
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  @keyframes archive-title-next {
+    from {
+      opacity: 0;
+      transform: translateX(4vw);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes archive-title-previous {
+    from {
+      opacity: 0;
+      transform: translateX(-4vw);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes archive-data-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes archive-atmosphere-in {
+    from {
+      opacity: 0;
+      scale: 1.18;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .archive-header {
+      grid-template-columns: 1fr auto;
+      padding: 0 1rem;
+    }
+
+    .archive-header-caption {
+      display: none;
+    }
+
+    .archive-header-nav {
+      gap: 1rem;
+    }
+
+    .archive-header-nav a:nth-child(2) {
+      display: none;
+    }
+
+    .archive-stage {
+      display: flex;
+      min-height: 100svh;
+      flex-direction: column;
+      padding: 7rem 1rem 1.25rem;
+    }
+
+    .archive-grid {
+      inset: 4.5rem 1rem 1rem;
+    }
+
+    .archive-coordinate {
+      display: none;
+    }
+
+    .archive-title-block {
+      position: relative;
+      z-index: 3;
+      top: auto;
+      right: auto;
+      left: auto;
+      margin-bottom: -1.25rem;
+    }
+
+    .archive-kicker {
+      margin-left: 0.2rem;
+    }
+
+    .archive-title {
+      max-width: none;
+      font-size: clamp(4rem, 17vw, 8rem);
+      line-height: 0.78;
+    }
+
+    .archive-media-frame {
+      position: relative;
+      z-index: 2;
+      top: auto;
+      left: auto;
+      width: calc(100% + 2rem);
+      height: min(50svh, 35rem);
+      min-height: 20rem;
+      margin-left: -1rem;
+      transform: none;
+      animation-name: archive-mobile-media-next;
+    }
+
+    .archive-shell[data-variant="0"] .archive-media-frame,
+    .archive-shell[data-variant="2"] .archive-media-frame {
+      top: auto;
+      left: auto;
+      width: calc(100% + 2rem);
+      height: min(50svh, 35rem);
+    }
+
+    .archive-shell[data-variant="1"] .archive-media-frame {
+      top: auto;
+      left: auto;
+      width: calc(100% - 1.25rem);
+      height: min(54svh, 37rem);
+      margin-left: auto;
+    }
+
+    .archive-shell[data-variant="1"] .archive-title {
+      max-width: 8ch;
+    }
+
+    .archive-shell[data-variant="2"] .archive-title-block {
+      right: auto;
+      left: auto;
+      width: 100%;
+    }
+
+    .archive-shell[data-direction="previous"] .archive-media-frame {
+      animation-name: archive-mobile-media-previous;
+    }
+
+    .archive-media-crop {
+      inset: 0.5rem 0;
+    }
+
+    .archive-project-data {
+      position: relative;
+      right: auto;
+      bottom: auto;
+      left: auto;
+      grid-template-columns: 3.5rem 1fr 4.5rem;
+      min-height: 0;
+      z-index: 4;
+      margin-top: -2.25rem;
+      padding: 1rem;
+      border-top-color: rgb(233 226 210 / 0.34);
+      background: linear-gradient(
+        90deg,
+        rgb(11 11 10 / 0.94),
+        rgb(11 11 10 / 0.74)
+      );
+      backdrop-filter: blur(12px);
+    }
+
+    .archive-data-credit {
+      display: none;
+    }
+
+    .archive-project-number {
+      font-size: 1.8rem;
+    }
+
+    .archive-stage-controls {
+      position: relative;
+      right: auto;
+      bottom: auto;
+      justify-content: end;
+      margin-top: 1.5rem;
+    }
+
+    .archive-index {
+      grid-template-columns: 1fr;
+      gap: 4rem;
+      padding: 5rem 1rem 3rem;
+    }
+
+    .archive-index-intro {
+      position: static;
+    }
+
+    .archive-track {
+      grid-template-columns: 2.5rem 1fr 3.5rem;
+      min-height: 5.5rem;
+    }
+
+    .archive-track-state {
+      display: none;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .archive-header-nav a:first-child {
+      display: none;
+    }
+
+    .archive-title {
+      font-size: clamp(3.4rem, 18vw, 6rem);
+    }
+
+    .archive-media-frame {
+      height: 40svh;
+      min-height: 17rem;
+    }
+
+    .archive-project-data {
+      grid-template-columns: 3rem 1fr 3.5rem;
+      gap: 0.75rem;
+      font-size: 0.68rem;
+    }
+
+    .archive-stage-controls {
+      justify-content: space-between;
+    }
+
+    .archive-index-intro p:last-child {
+      font-size: 2.35rem;
+    }
+  }
+
+  @keyframes archive-mobile-media-next {
+    from {
+      opacity: 0;
+      clip-path: inset(0 100% 0 0);
+      transform: none;
+    }
+    to {
+      opacity: 1;
+      clip-path: inset(0);
+      transform: none;
+    }
+  }
+
+  @keyframes archive-mobile-media-previous {
+    from {
+      opacity: 0;
+      clip-path: inset(0 0 0 100%);
+      transform: none;
+    }
+    to {
+      opacity: 1;
+      clip-path: inset(0);
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .archive-atmosphere-image,
+    .archive-title-block,
+    .archive-media-frame,
+    .archive-project-data {
+      animation: none !important;
+    }
+
+    .archive-track,
+    .archive-stage-controls button,
+    .archive-header-nav a {
+      transition: none !important;
+    }
+  }
 
   /* The lock screen renders on the server so it is present in the first
      painted frame. For a visitor who already dismissed it this session, the
@@ -150,21 +946,21 @@
      hides it with no flash in either direction. React then unmounts it. */
   html[data-intro-seen] [data-lock-screen] {
     display: none;
-    }
+  }
 
   /* Numbers are data here — years, frame indices, timecode — so they get the
      mono face and lining figures wherever they appear. */
   .font-display {
     font-family: var(--font-heading);
     letter-spacing: -0.06em;
-    }
+  }
 
   .font-data {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    }
+  }
 
   /* The window open/close animation is the only orchestrated motion on the
      page; honour the OS setting rather than shipping it unconditionally. */
@@ -176,6 +972,6 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
-      }
     }
+  }
 }
