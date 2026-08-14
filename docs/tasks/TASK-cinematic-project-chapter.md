@@ -260,9 +260,11 @@ Use the React Bits `RippleDistortion` component as a restrained interaction laye
 
 Adopt the reference's frame-sequence mechanism without copying its logo, PNG frames, disappearance assets, or exact silhouettes.
 
-- Build an original ART'hur walker as 15 layered inline-SVG frames.
+- Build an original ART'hur walker as 15 layered transparent frames generated specifically for this project.
 - Base the temporary identity on `芸` (`gei`, art / creative craft), rendered as a bold white Japanese character rather than tracing the reference mark.
 - Give `芸` two expressive articulated legs and one restrained ART'hur orange incision so it reads as a character in motion and remains connected to the Living Tag system.
+- Treat the `芸` body and legs as one heavy white silhouette: no enclosing circle, no halo, no thin dangling wires, and no black typographic fill.
+- Keep the legs short, thick, rounded, and visually fused into the lower strokes; enlarge the complete walker enough to read immediately over project media.
 - Keep every frame registered to the same center point and reveal exactly one frame per walking tick.
 - Use authored body compression, lean, alternating feet, and subtle halo changes so the mark visibly walks rather than merely bobbing as one rigid shape.
 - Keep the outer walker group fixed at the exact viewport-center path anchor.
@@ -343,7 +345,8 @@ This approach also satisfies the existing specification:
 | `components/archive/archive-prototype.tsx`     | Implement scroll measurement, SVG path nodes, moving ART'hur glyph, adjacent background interpolation, active metadata, neighboring labels, and compact index navigation. |
 | `components/RippleDistortion.jsx`              | Add and adapt the React Bits hover distortion with inactive-loop suspension, reduced-motion handling, context cleanup, and the supplied JavaScript + CSS API.             |
 | `components/RippleDistortion.css`              | Scope the ripple canvas as a full-frame overlay without changing media-frame geometry.                                                                                    |
-| `components/archive/arthur-walker.tsx`         | Add the original 15-frame inline-SVG ART'hur walking sequence while preserving a shared center registration.                                                              |
+| `components/archive/arthur-walker.tsx`         | Render the original 15-frame ART'hur walking sequence while preserving a shared center registration.                                                                      |
+| `public/brand/gei-walk/*.png`                  | Store the cleaned transparent frames derived only from the newly generated original ART'hur sprite concept.                                                               |
 | `app/(frontend)/globals.css`                   | Replace carousel presentation rules with the sticky timeline stage, morphing atmosphere, responsive curve composition, and reduced-motion states.                         |
 | `README.md`                                    | Describe the scroll-linked timeline prototype and its reference relationship.                                                                                             |
 | `CLAUDE.md`                                    | Record the timeline as the current delivery architecture and explicitly reject translating MILEZ into a carousel.                                                         |
@@ -378,6 +381,7 @@ This approach also satisfies the existing specification:
 - [ ] The underlying project image remains visible if RippleDistortion cannot initialize
 - [ ] Exactly one of 15 original ART'hur walker frames is visible at a time
 - [ ] The walker visibly reads as the Japanese `芸` art glyph with two legs and an ART'hur orange incision
+- [ ] Walker has no enclosing halo and reads as one substantial white character silhouette at desktop and mobile sizes
 - [ ] Walker frame index advances while idle without moving the outer center anchor
 - [ ] Reverse navigation flips the original walker while preserving the path tangent
 - [ ] No MILEZ walking/disappearance image or silhouette is copied into the repository
