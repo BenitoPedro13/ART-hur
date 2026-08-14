@@ -1,0 +1,4 @@
+.DS_Store
+
+# Local reference recordings are large source assets, not application artifacts.
+docs/*.mov
