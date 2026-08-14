@@ -27,7 +27,7 @@ export function ProjectHero({
   if (video?.provider === "file") {
     return (
       <video
-        className="work-hero-media"
+        className="work-figure-image"
         controls
         preload="none"
         playsInline
@@ -42,7 +42,7 @@ export function ProjectHero({
   if (video) {
     return (
       <iframe
-        className="work-hero-media"
+        className="work-figure-image"
         src={video.src}
         title={title}
         loading="lazy"
@@ -56,7 +56,7 @@ export function ProjectHero({
 
   return (
     <Image
-      className="work-hero-media"
+      className="work-figure-image"
       src={poster}
       alt={mediaAlt(project.cover, title)}
       width={width}
