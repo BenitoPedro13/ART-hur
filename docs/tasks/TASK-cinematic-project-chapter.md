@@ -55,7 +55,7 @@ The user's review of both captures establishes the decisive distinction:
 6. **The dotted route is connective tissue, not the main graphic.** It stays thin and quiet while the marker walks across it.
 7. **The marker needs authored locomotion.** It must rotate to the route tangent and use a restrained distance-driven gait that reverses correctly with scroll direction.
 8. **Typography morphs with the image.** Titles and metadata do not remain fixed while only the photograph changes, and they do not move in from offscreen as carousel labels.
-9. **Reverse travel is deterministic.** Every image, background, text, mask, and glyph state derives from scroll progress so reverse scrolling produces the exact inverse transition.
+9. **Reverse travel is deterministic.** Scroll selects a destination project. A separate eased transition value drives image, background, text, mask, path, and glyph states so reverse selection produces the inverse transition without scrubbing every effect directly from wheel distance.
 10. **No lateral camera movement.** Viewport anchoring remains stable at every quarter-interval between projects.
 
 ### Corrective requirements from the video comparison
@@ -79,8 +79,26 @@ The second pass sampled 62 full-resolution frames from `timeline-swings.mov` at 
 - Around 2.50–3.00 seconds, that centered composition collapses into a very dark bridge state. It does not travel sideways or expose a neighboring card.
 - From approximately 3.00–6.00 seconds, the stage remains compositionally anchored while the quiet route and glyph preserve continuity through the dark interval.
 - Around 6.00–7.00 seconds, the next centered project composition resolves into the same viewport slot.
-- The capture's elapsed time reflects the user's scroll pauses, not prescribed animation duration. Implementation must map the same behavior continuously to scroll progress.
+- The capture's elapsed time reflects both scroll pauses and independently eased transitions. Scroll determines which project is selected, not every intermediate shader frame.
 - The center crop confirms that image registration is stable. The transition language is displacement, dissolve, blur, crop, tone, and authored darkness, not camera travel.
+
+### State-machine evidence from the reference console
+
+The reference console exposes repeated pairs such as:
+
+- `selectDescId` and `prevDescId`
+- `goto: 3200`
+- `_to: 3200` and `_to: 4000`
+
+This confirms a discrete selection model:
+
+1. Native scroll reaches a project threshold or `goto` position.
+2. The selected description/project ID changes.
+3. The previous ID is retained as the transition source.
+4. An eased transition runs from previous to selected independently of additional wheel frames.
+5. Reverse scrolling selects the previous ID and runs the inverse transition.
+
+The visible path is also local, not a map of every project. Only the segment around the previous and selected projects is rendered. Its outer portions swing like an eased sine wave while its middle anchor remains compositionally centered. The path geometry is updated during the transition, and the glyph position must be recalculated from that live path on every transition tick so it never separates from the line.
 
 ### External component audit
 
@@ -94,7 +112,7 @@ Two React Bits components are approved, each with one specific job.
 - **Keyboard and touch:** native document scroll remains the only controller. Remove MorphSlider's drag, arrow-key carousel, buttons, indicators, and `aria-roledescription="carousel"` behavior.
 - **Reduced motion:** bypass shader displacement and show the nearest centered project state immediately.
 - **SSR and failure:** render a centered DOM image fallback before WebGL initializes and retain it if WebGL is unavailable or its context is lost.
-- **Ownership:** install the official source, then adapt its OGL engine to accept `fromIndex`, `toIndex`, `progress`, and direction from the timeline scroll engine. Remove GSAP sequencing because scroll progress is the source of truth.
+- **Ownership:** install the official source, then adapt its OGL engine to accept `fromIndex`, `toIndex`, transition progress, and direction from one shared transition controller. Retain or reuse the official GSAP sequencing model because scroll selects the target but does not scrub every shader frame.
 - **Identity test:** use project focal points, ART'hur tones, and authored dark intervals. Do not preserve React Bits demo captions, radius, controls, or slider semantics.
 
 Official registry source:
@@ -132,14 +150,15 @@ pnpm dlx shadcn@latest add @react-bits/BlurText-TS-CSS
 
 1. Replace the carousel stage with a tall native-scroll timeline section.
 2. Keep one full-viewport visual stage sticky inside that section.
-3. Set the section's scroll distance from the number of projects so every adjacent project pair receives a deliberate transition interval.
+3. Set one native scroll threshold or `goto` position per project.
 4. Track native window scroll with one passive listener and `requestAnimationFrame`.
-5. Convert scroll position into normalized progress from `0` to `1` without intercepting wheel, touch, or keyboard scrolling.
-6. Draw a responsive curved dotted timeline as SVG.
-7. Position one ART'hur glyph on the SVG path with `getPointAtLength()` using normalized scroll progress.
-8. Place quiet project nodes along the same path at equal timeline intervals.
-9. Keep the project media centered behind the path and use the adapted React Bits `MorphSlider` WebGL canvas to melt adjacent project covers in place.
-10. Morph the surrounding DOM layers from the same `localProgress` value:
+5. Convert scroll position into a discrete target index without intercepting wheel, touch, or keyboard scrolling.
+6. When the target index changes, retain the previous index and start one eased transition controller from `0` to `1`.
+7. Draw only the local previous-to-selected curved dotted segment as SVG. Do not render the full path of all projects.
+8. Morph the segment's outer control points during the transition while keeping its middle anchor stable.
+9. Recompute the glyph with `getPointAtLength()` and the live path tangent on every transition tick so it remains attached to the swinging line.
+10. Keep the project media centered behind the path and use the adapted React Bits `MorphSlider` WebGL canvas to melt the previous cover into the selected cover in place.
+11. Morph the surrounding DOM layers from the same independently eased transition value:
 
 - opacity
 - scale
@@ -149,51 +168,58 @@ pnpm dlx shadcn@latest add @react-bits/BlurText-TS-CSS
 - background tone and texture
 - title and metadata blur, opacity, scale, and small local displacement
 
-11. Keep the stage, media canvas, and text anchor centered. No project layer may translate laterally with overall timeline progress.
-12. Update React state only when the nearest active project changes. Per-frame glyph, shader, image, background, and text updates should use refs or controlled uniforms rather than rerendering the whole component on every scroll event.
-13. Display title, year, role, and sequence position as restrained layers that morph with the project.
-14. Remove previous/next arrows, side-by-side project exposure, and the large track-list footer from the sticky experience.
-15. Add a compact text index after the timeline as the complete keyboard and low-motion browsing alternative.
-16. Let compact-index selections scroll the native document to the selected timeline node.
-17. Keep the existing content-managed contact link in the quiet global header.
-18. Use the Living Tag only once in the header. The moving glyph is a transformed timeline marker, not a second full wordmark.
-19. Update README and the current delivery section of `CLAUDE.md` after the timeline architecture is implemented and verified.
+12. Keep the stage, media canvas, and text anchor centered. No project layer may translate laterally with overall timeline progress.
+13. Update React state only when the selected project changes. Transition ticks update glyph, live path, shader, image, background, and text through refs or controlled uniforms.
+14. Display title, year, role, and sequence position as restrained layers that morph with the project.
+15. Remove previous/next arrows, side-by-side project exposure, and the large track-list footer from the sticky experience.
+16. Add a compact text index after the timeline as the complete keyboard and low-motion browsing alternative.
+17. Let compact-index selections scroll the native document to the selected project's `goto` position.
+18. Keep the existing content-managed contact link in the quiet global header.
+19. Use the Living Tag only once in the header. The moving glyph is a transformed timeline marker, not a second full wordmark.
+20. Update README and the current delivery section of `CLAUDE.md` after the timeline architecture is implemented and verified.
 
 ### Technical model
 
 ```text
-native document scroll
-        ↓
-tall timeline section, approximately one viewport per project interval
-        ↓
+native document scroll → nearest project threshold / goto position
+        ↓ target changes
+previous index + selected index
+        ↓ independent eased transition, 0 → 1
 sticky 100svh visual stage
         ├── fixed centered DOM image fallback
         ├── fixed centered React Bits/OGL morph canvas
         ├── fixed centered background and typography layers
-        ├── SVG dotted curve
-        ├── moving ART'hur glyph
-        ├── project nodes
+        ├── local previous-to-selected SVG segment
+        ├── swinging outer path controls with stable middle anchor
+        ├── ART'hur glyph recalculated on the live path
         └── morphing active project metadata
 ```
 
-Scroll progress calculation:
+Scroll selection calculation:
 
 ```text
-progress = clamp(
+sectionProgress = clamp(
   (window.scrollY - sectionTop) /
   (sectionHeight - viewportHeight),
   0,
   1
 )
+
+targetIndex = round(sectionProgress × (projectCount - 1))
 ```
 
-Project interpolation:
+Transition model after `targetIndex` changes:
 
 ```text
-projectPosition = progress × (projectCount - 1)
-fromIndex = floor(projectPosition)
-toIndex = min(fromIndex + 1, projectCount - 1)
-localProgress = projectPosition - fromIndex
+fromIndex = previously selected project
+toIndex = targetIndex
+transitionProgress = ease(0 → 1 over the authored transition duration)
+
+on each transition tick:
+  update WebGL morph uniforms
+  update centered background and text layers
+  update local SVG segment geometry
+  recalculate glyph point and tangent from the live path
 ```
 
 Only the adjacent `from` and `to` states should be visually prominent during a transition. They occupy the same centered slot.
@@ -203,8 +229,9 @@ Only the adjacent `from` and `to` states should be visually prominent during a t
 When `prefers-reduced-motion: reduce` is active:
 
 - preserve native scrolling and the complete timeline
-- snap the glyph to the nearest project node instead of continuously gliding
-- switch backgrounds at the nearest node without scale, clip, or filter interpolation
+- change the selected project immediately at the threshold
+- snap the glyph and local path to the selected stable state
+- switch backgrounds without shader displacement, path swing, scale, clip, blur, or filter interpolation
 - keep active title and metadata immediate
 - retain the compact index and all project access
 
@@ -222,10 +249,11 @@ When `prefers-reduced-motion: reduce` is active:
 - Keep a DOM fallback for reduced motion, failed initialization, context loss, and unsupported devices.
 - Do not load or autoplay every project video.
 - Preload only the current and adjacent project textures where practical.
-- Use one passive scroll listener and one scheduled animation frame.
-- Cancel the frame and listener on unmount.
-- Pause per-frame work while the timeline is fully outside the viewport where practical.
-- Keep React state changes to project-node boundaries.
+- Use one passive scroll listener only to calculate the discrete target index.
+- Use one transition ticker only while a project transition is active.
+- Cancel the transition, frame, and listener on unmount.
+- Pause all transition work while stable.
+- Keep React state changes to project selection boundaries.
 
 ### Intensity audit
 
@@ -243,6 +271,8 @@ When `prefers-reduced-motion: reduce` is active:
 - No autoplay sound
 - No interactive carousel behavior inside the WebGL component
 - No horizontal camera or side-by-side project travel
+- No direct wheel-to-shader scrubbing after the selected project threshold is known
+- No full multi-project route visible at once
 - No copied MILEZ glyphs, Japanese marks, assets, curve, or exact transition timings
 - No Payload schema migration
 - No deletion of inactive legacy desktop components
@@ -283,6 +313,11 @@ This approach also satisfies the existing specification:
 - [ ] Timeline section uses native document scroll with no nested scroll container
 - [ ] Visual stage remains sticky for the project sequence
 - [ ] Glyph position changes continuously along the SVG path during normal-motion scrolling
+- [ ] Scroll only selects a target project; the visual morph completes on its own authored easing
+- [ ] Holding scroll still after a threshold does not freeze a transition midway
+- [ ] Only the local previous-to-selected path segment is visible
+- [ ] Path borders swing while the middle anchor remains stable
+- [ ] Glyph position and tangent are recalculated after every live path update
 - [ ] Glyph snaps to project nodes under reduced motion
 - [ ] Adjacent project backgrounds cross-morph continuously between nodes
 - [ ] Image canvas, full-stage background, title, and metadata remain centered at every quarter interval
