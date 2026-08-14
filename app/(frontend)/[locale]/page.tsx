@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 
 import { ArchivePrototype } from "@/components/archive/archive-prototype"
 import { OpeningSequence } from "@/components/site/opening-sequence"
+import { SiteFooter } from "@/components/site/site-footer"
 import { compact, StructuredData } from "@/components/site/structured-data"
 import { getDictionary, isLocale } from "@/lib/i18n"
 import { getDesktopItems, getSite } from "@/lib/payload"
@@ -100,6 +101,16 @@ export default async function ArchivePage({
         projects={projects}
         tagline={site.tagline ?? null}
       />
+      {/*
+        The colophon closes the archive on the same Newsprint the index band
+        opened, so the page ends on a surface rather than cutting back to the
+        room. It is also the only place the home offers the sound control, the
+        language switch, and a direct contact path — none of which the
+        cinematic stage above may carry.
+      */}
+      <div className="timeline-colophon">
+        <SiteFooter dictionary={dictionary} locale={locale} site={site} />
+      </div>
     </>
   )
 }

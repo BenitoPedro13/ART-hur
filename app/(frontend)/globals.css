@@ -656,6 +656,43 @@
     color: var(--foreground);
   }
 
+  /* --- Home colophon -------------------------------------------------------
+     The interior `SiteFooter`, reused verbatim so the archive states its
+     production data in one voice on every route. Only the frame changes: it
+     continues the index band's Newsprint instead of declaring its own surface,
+     because `[data-surface="sheet"]` would repaint the whole document and the
+     room above it is the point of the home.
+
+     Utility type here leaves the home's 0.48-0.54rem cinematic register and
+     returns to the interior 0.6875rem floor. The stage and the index band are
+     composition; a colophon is a contact path, and its links have to be read
+     and hit. */
+
+  .timeline-colophon {
+    --surface-rule: var(--sheet-rule);
+    --surface-muted: var(--sheet-muted);
+    --data-size: 0.6875rem;
+    position: relative;
+    z-index: 20;
+    background: var(--foreground);
+    color: var(--background);
+  }
+
+  .timeline-colophon .font-data {
+    font-size: var(--data-size);
+  }
+
+  /* Align the dashed rule with the index band's edges rather than the
+     interior shell's gutter — the two bands read as one sheet. */
+  .timeline-colophon .shell-inner {
+    max-width: none;
+    padding-inline: 2rem;
+  }
+
+  .timeline-colophon .shell-footer {
+    padding-block: 0 clamp(2.5rem, 5vw, 4rem);
+  }
+
   .timeline-empty {
     display: grid;
     min-height: 100svh;
@@ -726,6 +763,10 @@
 
     .timeline-index-row span:last-child {
       display: none;
+    }
+
+    .timeline-colophon .shell-inner {
+      padding-inline: 1rem;
     }
   }
 
