@@ -23,15 +23,18 @@ export function SiteFooter({
   site: Site
 }) {
   const rows = site.contact?.rows ?? []
-  const socials = site.socials ?? []
   const year = new Date().getFullYear()
 
   return (
     <footer className="shell-footer">
       <div className="shell-inner">
         <hr className="rule-dashed shell-footer-rule" />
-
         <div className="shell-footer-grid">
+          
+          <p className="shell-footer-note font-data">
+            © {year} {site.ownerName}
+          </p>
+
           <ul className="shell-footer-links font-data">
             {rows.map((row) => (
               <li key={row.id ?? row.href}>
@@ -40,32 +43,23 @@ export function SiteFooter({
             ))}
           </ul>
 
-          {socials.length > 0 ? (
-            <ul
-              className="shell-footer-links font-data"
-              aria-label={dictionary.elsewhere}
-            >
-              {socials.map((social) => (
-                <li key={social.id ?? social.url}>
-                  <a
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {social.platform}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-
           <SoundToggle dictionary={dictionary} />
 
           <LocaleSwitch current={locale} dictionary={dictionary} />
 
-          <p className="shell-footer-note font-data">
-            © {year} {site.ownerName}
-          </p>
+
+
+          <div className="shell-footer-note font-data">
+            powered by{" "}
+            <a
+              href="https://blessed-moon.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              Blessed Moon Studio
+            </a>
+          </div>
         </div>
       </div>
     </footer>
