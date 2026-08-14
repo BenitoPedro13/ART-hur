@@ -5,6 +5,14 @@ export const INTRO_DISMISSED_KEY = 'portfolio:intro-dismissed'
 export const INTRO_SEEN_ATTR = 'data-intro-seen'
 
 /**
+ * No longer mounted.
+ *
+ * This served the retired lock screen, and briefly the opening sequence before
+ * that moved to a per-page-load module flag — the opening now shows on every
+ * refresh by design, which sessionStorage cannot express. Kept only because
+ * `components/desktop/lock-screen.tsx` still imports the key, and that folder
+ * stays as migration material.
+ *
  * Runs synchronously in <head>, before the browser paints anything.
  *
  * The lock screen renders on the server so it is present in the very first

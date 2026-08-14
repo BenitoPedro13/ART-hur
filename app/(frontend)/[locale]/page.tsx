@@ -2,10 +2,11 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { ArchivePrototype } from "@/components/archive/archive-prototype"
+import { OpeningSequence } from "@/components/site/opening-sequence"
 import { compact, StructuredData } from "@/components/site/structured-data"
-import { isLocale } from "@/lib/i18n"
+import { getDictionary, isLocale } from "@/lib/i18n"
 import { getDesktopItems, getSite } from "@/lib/payload"
-import { selectedProjects } from "@/lib/projects"
+import { selectedProjects, yearSpan } from "@/lib/projects"
 import { buildMetadata, personSchema, websiteSchema } from "@/lib/seo"
 
 /**
@@ -69,6 +70,21 @@ export default async function ArchivePage({
   // Shared with /index and /work so all three agree on order and membership.
   const projects = selectedProjects(items)
 
+  const dictionary = getDictionary(locale)
+
+  /**
+   * The plate states real archive facts, the way every slate on the site does.
+   * Resolved here on the server so the opening never waits on a fetch.
+   */
+  const openingMeta = [
+    // No owner row: the wordmark directly above already says the name.
+    {
+      label: dictionary.projects,
+      value: String(projects.length).padStart(2, "0"),
+    },
+    { label: dictionary.year, value: yearSpan(projects) ?? "—" },
+  ]
+
   const schema = {
     "@context": "https://schema.org",
     "@graph": [compact(websiteSchema(site, locale)), compact(personSchema(site, locale))],
@@ -77,6 +93,7 @@ export default async function ArchivePage({
   return (
     <>
       <StructuredData data={schema} />
+      <OpeningSequence dictionary={dictionary} meta={openingMeta} />
       <ArchivePrototype
         locale={locale}
         ownerName={site.ownerName}

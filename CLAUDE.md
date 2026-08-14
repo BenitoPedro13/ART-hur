@@ -258,7 +258,23 @@ Real project content is photo sequences with no credits or description, so the
 case study is built around the gallery, and any slate row without a value is
 dropped rather than filled with "to be confirmed".
 
-## 13. Seeds are destructive
+## 13. Opening and sound
+
+The opening plate shows on every page load of the home and never on a
+client-side return to it. Do not move that flag into `sessionStorage`: the spec
+asks that it not replay on every route transition, which is not the same as
+once per session.
+
+Its animation must keep filling backwards — base styles are the final state,
+keyframes only supply an earlier hidden one. A full-screen overlay that can
+render blank hides the entire site, so that failure stays structurally
+impossible rather than merely unlikely.
+
+Sound is opt-in, persisted per browser, and silent under reduced motion. Never
+autoplay, and never remove the visible control. `public/sounds/ambient.mp3` is
+a licensed placeholder; the real track must be original or properly licensed.
+
+## 14. Seeds are destructive
 
 `pnpm seed` and `pnpm seed:demo` are for empty or placeholder databases only.
 They upsert by slug, which includes the `selected-work` folder and the entire

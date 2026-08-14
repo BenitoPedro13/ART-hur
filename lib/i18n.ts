@@ -102,6 +102,19 @@ export type Dictionary = {
   projectSequence: string
   primaryNavigation: string
   projects: string
+  /** Opening sequence and the sound gate it offers. */
+  enter: string
+  enterHint: string
+  soundPrompt: string
+  soundEnable: string
+  soundOn: string
+  soundContinueMuted: string
+  soundLabel: string
+  soundMute: string
+  soundUnmute: string
+  skip: string
+  /** 404. */
+  notFoundBody: string
 }
 
 const STRINGS: Record<string, Dictionary> = {
@@ -165,6 +178,17 @@ const STRINGS: Record<string, Dictionary> = {
     projectSequence: 'Project timeline',
     primaryNavigation: 'Primary navigation',
     projects: 'Projects',
+    enter: 'Enter',
+    enterHint: 'Scroll to enter',
+    soundPrompt: 'This archive has sound.',
+    soundEnable: 'Play with sound',
+    soundOn: 'Sound on',
+    soundContinueMuted: 'Stay muted',
+    soundLabel: 'Sound',
+    soundMute: 'Mute sound',
+    soundUnmute: 'Unmute sound',
+    skip: 'Skip',
+    notFoundBody: 'That page is not in the archive. The work is still here.',
   },
   pt: {
     back: 'Voltar',
@@ -226,6 +250,17 @@ const STRINGS: Record<string, Dictionary> = {
     projectSequence: 'Linha temporal de projetos',
     primaryNavigation: 'Navegação principal',
     projects: 'Projetos',
+    enter: 'Entrar',
+    enterHint: 'Rola para entrar',
+    soundPrompt: 'Este arquivo tem som.',
+    soundEnable: 'Entrar com som',
+    soundOn: 'Som ligado',
+    soundContinueMuted: 'Continuar sem som',
+    soundLabel: 'Som',
+    soundMute: 'Desligar som',
+    soundUnmute: 'Ligar som',
+    skip: 'Saltar',
+    notFoundBody: 'Essa página não está no arquivo. O trabalho continua aqui.',
   },
   es: {
     back: 'Volver',
@@ -287,6 +322,17 @@ const STRINGS: Record<string, Dictionary> = {
     projectSequence: 'Línea temporal de proyectos',
     primaryNavigation: 'Navegación principal',
     projects: 'Proyectos',
+    enter: 'Entrar',
+    enterHint: 'Desplaza para entrar',
+    soundPrompt: 'Este archivo tiene sonido.',
+    soundEnable: 'Entrar con sonido',
+    soundOn: 'Sonido activado',
+    soundContinueMuted: 'Seguir sin sonido',
+    soundLabel: 'Sonido',
+    soundMute: 'Silenciar',
+    soundUnmute: 'Activar sonido',
+    skip: 'Saltar',
+    notFoundBody: 'Esa página no está en el archivo. El trabajo sigue aquí.',
   },
   fr: {
     back: 'Retour',
@@ -348,6 +394,17 @@ const STRINGS: Record<string, Dictionary> = {
     projectSequence: 'Chronologie des projets',
     primaryNavigation: 'Navigation principale',
     projects: 'Projets',
+    enter: 'Entrer',
+    enterHint: 'Faites défiler pour entrer',
+    soundPrompt: 'Cette archive a du son.',
+    soundEnable: 'Entrer avec le son',
+    soundOn: 'Son activé',
+    soundContinueMuted: 'Rester en silence',
+    soundLabel: 'Son',
+    soundMute: 'Couper le son',
+    soundUnmute: 'Activer le son',
+    skip: 'Passer',
+    notFoundBody: 'Cette page n’est pas dans l’archive. Le travail est toujours là.',
   },
 }
 

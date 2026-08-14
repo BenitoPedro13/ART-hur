@@ -1,4 +1,5 @@
 import { LocaleSwitch } from "@/components/site/locale-switch"
+import { SoundToggle } from "@/components/site/sound-toggle"
 import type { Dictionary } from "@/lib/i18n"
 import type { Site } from "@/payload-types"
 
@@ -57,6 +58,8 @@ export function SiteFooter({
               ))}
             </ul>
           ) : null}
+
+          <SoundToggle dictionary={dictionary} />
 
           <LocaleSwitch current={locale} dictionary={dictionary} />
 

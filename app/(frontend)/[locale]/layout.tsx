@@ -4,12 +4,12 @@ import { Archivo, IBM_Plex_Mono, Instrument_Sans } from 'next/font/google'
 
 import '../globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
+import { SoundProvider } from '@/components/site/sound-provider'
 import { WalkingFavicon } from '@/components/site/walking-favicon'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { isLocale, locales } from '@/lib/i18n'
 import { getSite } from '@/lib/payload'
-import { introBlockingScript } from '@/lib/intro'
 import { siteUrl } from '@/lib/seo'
 
 /**
@@ -123,14 +123,12 @@ export default async function LocaleLayout({
         fontMono.variable
       )}
     >
-      <head>
-        {/* Must run before first paint; see lib/intro.ts. */}
-        <script dangerouslySetInnerHTML={{ __html: introBlockingScript }} />
-      </head>
       <body className="bg-void">
         <ThemeProvider>
-          <WalkingFavicon />
-          <TooltipProvider>{children}</TooltipProvider>
+          <SoundProvider>
+            <WalkingFavicon />
+            <TooltipProvider>{children}</TooltipProvider>
+          </SoundProvider>
         </ThemeProvider>
       </body>
     </html>

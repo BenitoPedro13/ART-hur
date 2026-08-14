@@ -81,6 +81,25 @@ it is a sula, not a texture.
   `alternates.languages`, rebuilt per request so curated changes appear.
 - Set `NEXT_PUBLIC_SITE_URL` once a custom domain is attached.
 
+## Opening, sound, and 404
+
+- The home opens on a plate built from the site's own devices: the Living Tag,
+  a mono slate of real archive facts, and the dashed route at rest. It ends on
+  a gate offering sound, because the spec forbids playing any before asking.
+- It shows on **every page load** and never on a client-side return to the home.
+  That line is drawn by a module-scope flag, not `sessionStorage` — a refresh
+  should give you the opening again; navigating back from `/index` should not.
+- The animation is CSS-only and fills *backwards*: every element's base style is
+  its final visible state, so if the animations never run the plate is complete
+  rather than blank. Teardown is on a timer, never `animationend`.
+- Sound is off until asked for, persists per browser, waits for a real gesture
+  (browsers refuse playback before one), and stays off entirely under reduced
+  motion. The control lives in the interior footer. See `public/sounds/README.md`
+  — the ambient track there is a **licensed placeholder**, not the intended music.
+- `404` renders inside the locale layout via a `[...unmatched]` catch-all; a
+  segment's `not-found.tsx` only catches `notFound()` thrown within it, so
+  without the catch-all an unmatched URL falls through to Next's built-in page.
+
 ## First run
 
 ```bash
