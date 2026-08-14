@@ -514,6 +514,15 @@ export function ArchivePrototype({
     function handleWheel(event: WheelEvent) {
       if (!timelineOwnsInput()) return
 
+      // A transition already owns the stage: keep swallowing input (including
+      // the inertial tail of the gesture that started it) until it settles, so
+      // reaching the first or last project mid-flight can't release native
+      // scroll and drag the pinned section out from under its own crossfade.
+      if (transition) {
+        event.preventDefault()
+        return
+      }
+
       const direction = Math.sign(event.deltaY)
       const canMove =
         direction > 0
@@ -522,7 +531,6 @@ export function ArchivePrototype({
       if (!canMove) return
 
       event.preventDefault()
-      if (transition) return
 
       wheelDelta += event.deltaY
       if (Math.abs(wheelDelta) < 8) return
@@ -540,6 +548,14 @@ export function ArchivePrototype({
 
       const currentY = event.touches[0]?.clientY
       if (currentY === undefined) return
+
+      // Same reasoning as handleWheel: don't let a boundary canMove==false
+      // release native touch scroll while a transition is still playing.
+      if (transition) {
+        event.preventDefault()
+        return
+      }
+
       const delta = touchStartY - currentY
       const direction = Math.sign(delta)
       const canMove =
@@ -549,7 +565,7 @@ export function ArchivePrototype({
       if (!canMove) return
 
       event.preventDefault()
-      if (transition || Math.abs(delta) < 8) return
+      if (Math.abs(delta) < 8) return
 
       if (gotoAdjacentProject(direction)) touchStartY = currentY
     }

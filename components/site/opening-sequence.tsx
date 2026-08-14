@@ -212,7 +212,7 @@ export function OpeningSequence({
   return (
     <div
       data-opening=""
-      className={`opening${phase === "exiting" ? "opening-exiting" : ""}`}
+      className={`opening${phase === "exiting" ? " opening-exiting" : ""}`}
       style={{ opacity: phase === "exiting" ? 0 : 1 }}
       role="dialog"
       aria-modal="true"
