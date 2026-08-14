@@ -229,17 +229,46 @@ Also run `git diff --check`, inspect responsive behavior, test keyboard navigati
 
 Update `README.md`, the active task document, and this guide when architecture or workflow changes. Commit coherent ART'hur changes as work progresses.
 
-## 12. Current delivery sequence
+## 12. Route and surface model
 
-The current priority is not the complete site. It is the centered archive timeline prototype:
+The archive stage is validated and the interior routes are built. The public
+site is now:
 
-1. preserve one fixed centered project stage
-2. select adjacent projects from small directional scroll gestures
-3. morph project image, atmosphere, title, and metadata in place
-4. keep one breathing edge-to-edge route with the center-locked `芸` walker
-5. use RippleDistortion only on stable image hover
-6. expose project sequence, role, year, and credits clearly
-7. keep the CMS data foundation intact
-8. validate this direction before expanding project detail, index, about, and contact routes
+| Route | Surface | Assertive element |
+| --- | --- | --- |
+| `/{locale}` | room | morphing project atmosphere |
+| `/{locale}/work/[slug]` | room | hero media |
+| `/{locale}/index` | sheet | none |
+| `/{locale}/about` | sheet | the Living Tag |
+| `/{locale}/contact` | room | none |
 
-Real project content and Arthur-authored marks are still required before final art direction is considered complete.
+Two surfaces, cut between with no fade: the **room** is Vinyl Black for
+media-led routes, the **sheet** is Newsprint for reading. Interior pages stamp
+`data-surface` on their root element; `globals.css` paints the canvas to match.
+
+The dashed route the `芸` walker crosses on the home page becomes the interior
+ruling stroke — same 8/6 dash, horizontal and still — carrying a slate of real
+production metadata. The walker, the morph canvases, and the ripple layer stay
+exclusive to the home. Do not repeat them on an interior route.
+
+Interior utility type sits at the spec's `0.6875rem` floor. The home's
+`0.48rem` is a deliberate cinematic choice and does not propagate.
+
+Real project content is photo sequences with no credits or description, so the
+case study is built around the gallery, and any slate row without a value is
+dropped rather than filled with "to be confirmed".
+
+## 13. Seeds are destructive
+
+`pnpm seed` and `pnpm seed:demo` are for empty or placeholder databases only.
+They upsert by slug, which includes the `selected-work` folder and the entire
+Site global — so running one against real content orphans the curated projects
+and replaces Arthur's copy with placeholders.
+
+`assertSeedSafe` now aborts when it finds a project no seed owns. Never pass
+`--force` to get past it without asking first. Check the database before
+seeding, not after.
+
+Real project content is in place. Arthur-authored marks, a confirmed biography,
+and per-project credits and context are still required before final art
+direction is complete.

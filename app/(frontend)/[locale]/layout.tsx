@@ -4,12 +4,13 @@ import { Archivo, IBM_Plex_Mono, Instrument_Sans } from 'next/font/google'
 
 import '../globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
+import { WalkingFavicon } from '@/components/site/walking-favicon'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { isLocale, locales } from '@/lib/i18n'
 import { getSite } from '@/lib/payload'
 import { introBlockingScript } from '@/lib/intro'
-import { mediaUrl } from '@/lib/media'
+import { siteUrl } from '@/lib/seo'
 
 /**
  * Three type roles, each with a job:
@@ -59,20 +60,37 @@ export async function generateMetadata({
     return {}
   }
 
-  const title = site.seo?.siteTitle || site.ownerName
-  const description = site.seo?.siteDescription || undefined
-  const ogImage = mediaUrl(site.seo?.ogImage)
+  const siteName = site.seo?.siteTitle || site.ownerName
 
   return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      type: 'website',
-      locale,
-      images: ogImage ? [{ url: ogImage }] : undefined,
+    metadataBase: siteUrl(),
+    /**
+     * Pages set a bare title and inherit the suffix, so every tab and search
+     * result carries the archive's name without each route repeating it.
+     * `absolute` on the home keeps it from reading "ART'hur — ART'hur".
+     */
+    title: {
+      default: siteName,
+      template: `%s — ${siteName}`,
     },
+    description: site.seo?.siteDescription || undefined,
+    applicationName: siteName,
+    authors: [{ name: site.ownerName }],
+    creator: site.ownerName,
+    publisher: site.ownerName,
+    // The archive is the work; let search engines show the imagery in full.
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1,
+      },
+    },
+    formatDetection: { telephone: false },
   }
 }
 
@@ -111,6 +129,7 @@ export default async function LocaleLayout({
       </head>
       <body className="bg-void">
         <ThemeProvider>
+          <WalkingFavicon />
           <TooltipProvider>{children}</TooltipProvider>
         </ThemeProvider>
       </body>

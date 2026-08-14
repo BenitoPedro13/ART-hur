@@ -443,4 +443,11 @@ This approach also satisfies the existing specification:
 
 ## Outcome
 
-Pending implementation. This corrected plan must be committed before source files are changed.
+Implemented. The scroll-linked timeline, the adapted MorphSlider, the
+RippleDistortion hover layer, and the 15-frame `芸` walker all ship on the home
+route.
+
+Superseded in part by `TASK-interior-routes.md`: the compact index moved to its
+own `/index` route, the home's index band now drives the stage on click, the
+"No dedicated `/work/[slug]` route" non-goal no longer holds, and the header is
+the shared `SiteHeader`.

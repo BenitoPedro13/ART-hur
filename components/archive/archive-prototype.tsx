@@ -2,6 +2,7 @@
 
 import { gsap } from "gsap"
 import { useReducedMotion } from "motion/react"
+import Link from "next/link"
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react"
 
 import BlurText from "@/components/BlurText"
@@ -15,11 +16,12 @@ import {
   ArthurWalker,
 } from "@/components/archive/arthur-walker"
 import { LivingTag } from "@/components/brand/living-tag"
+import { SiteHeader } from "@/components/site/site-header"
+import { getDictionary } from "@/lib/i18n"
 import { mediaUrl, resolveMedia } from "@/lib/media"
 import type { Project } from "@/payload-types"
 
 type ArchivePrototypeProps = {
-  contactHref: string | null
   locale: string
   ownerName: string
   projects: Project[]
@@ -176,7 +178,6 @@ function projectRole(project: Project | undefined) {
 }
 
 export function ArchivePrototype({
-  contactHref,
   locale,
   ownerName,
   projects,
@@ -197,8 +198,15 @@ export function ArchivePrototype({
   const projectLayerRefs = useRef<(HTMLDivElement | null)[]>([])
   const activeIndexRef = useRef(0)
   const directionRef = useRef(1)
+  /**
+   * Selection lives inside the animation effect, but the index rows are in the
+   * render scope. The effect publishes its selector here so a row click runs
+   * exactly the same path a wheel notch does, rather than only moving the
+   * document and leaving the stage behind.
+   */
+  const selectProjectRef = useRef<((index: number) => void) | null>(null)
   const prefersReducedMotion = useReducedMotion() ?? false
-  const isPortuguese = locale === "pt"
+  const dictionary = getDictionary(locale)
 
   const morphItems = useMemo<MorphItem[]>(
     () =>
@@ -693,6 +701,8 @@ export function ArchivePrototype({
       scrollFrame = window.requestAnimationFrame(readScrollTarget)
     }
 
+    selectProjectRef.current = selectProject
+
     measureRoute()
     routeTilt = tiltAt(activeIndexRef.current)
     routeBow = bowAt(activeIndexRef.current)
@@ -712,6 +722,7 @@ export function ArchivePrototype({
     startAmbientAnimation()
 
     return () => {
+      selectProjectRef.current = null
       window.removeEventListener("resize", scheduleTargetRead)
       window.removeEventListener("wheel", handleWheel)
       window.removeEventListener("touchstart", handleTouchStart)
@@ -726,14 +737,10 @@ export function ArchivePrototype({
     return (
       <main className="timeline-empty">
         <LivingTag />
-        <p className="font-data">
-          {isPortuguese ? "ARQUIVO EM PREPARAÇÃO" : "ARCHIVE IN PREPARATION"}
-        </p>
-        {contactHref ? (
-          <a href={contactHref} className="timeline-text-link">
-            {isPortuguese ? "CONTACTO" : "CONTACT"}
-          </a>
-        ) : null}
+        <p className="font-data">{dictionary.archiveInPreparation}</p>
+        <Link href={`/${locale}/contact`} className="timeline-text-link font-data">
+          {dictionary.navContact}
+        </Link>
       </main>
     )
   }
@@ -744,11 +751,22 @@ export function ArchivePrototype({
   const rippleEnabled = mediaHoverActive && !isTransitioning
   const count = Math.max(projects.length, 2)
   const indexHeading =
-    tagline ?? (isPortuguese ? "Arquivo vivo." : "Living archive.")
+    tagline ?? dictionary.indexLabel
 
-  function scrollToProject(index: number) {
+  /**
+   * Jump the stage to a project from the index.
+   *
+   * Selection is the source of truth and the scroll only synchronises the
+   * document to it — the same order the wheel gesture uses. Scrolling alone is
+   * not enough: nothing listens to scroll (deliberately, so the morph is never
+   * frame-scrubbed by wheel distance), so a document jump on its own would
+   * leave the stage showing the previous project.
+   */
+  function goToProject(index: number) {
     const section = sectionRef.current
     if (!section || !projects[index]) return
+
+    selectProjectRef.current?.(index)
 
     const denominator = Math.max(projects.length - 1, 1)
     const ratio = projects.length > 1 ? index / denominator : 0
@@ -763,40 +781,20 @@ export function ArchivePrototype({
 
   return (
     <main className="timeline-shell">
-      <header className="timeline-header">
-        <a
-          href="#project-timeline"
-          className="timeline-brand"
-          aria-label={`${ownerName}, home`}
-        >
-          <LivingTag compact />
-        </a>
-
-        <p className="timeline-header-position font-data">
-          {formatIndex(activeIndex)} / {formatCount(projects.length)}
-        </p>
-
-        <nav
-          className="timeline-header-nav font-data"
-          aria-label={
-            isPortuguese ? "Navegação principal" : "Primary navigation"
-          }
-        >
-          <a href="#project-index">{isPortuguese ? "ÍNDICE" : "INDEX"}</a>
-          {contactHref ? (
-            <a href={contactHref}>{isPortuguese ? "CONTACTO" : "CONTACT"}</a>
-          ) : null}
-        </nav>
-      </header>
+      <SiteHeader
+        active="archive"
+        center={`${formatIndex(activeIndex)} / ${formatCount(projects.length)}`}
+        dictionary={dictionary}
+        locale={locale}
+        ownerName={ownerName}
+      />
 
       <section
         ref={sectionRef}
         id="project-timeline"
         className="timeline-scroll"
         style={{ "--timeline-count": count } as CSSProperties}
-        aria-label={
-          isPortuguese ? "Linha temporal de projetos" : "Project timeline"
-        }
+        aria-label={dictionary.projectSequence}
       >
         <div className="timeline-stage">
           <div className="timeline-background-morph" aria-hidden="true">
@@ -857,6 +855,24 @@ export function ArchivePrototype({
                 quality="low"
               />
             </div>
+
+            {/* The stage is the site's front door, so the image has to be the
+                way in. An overlay link keeps both WebGL canvases untouched
+                underneath while giving the frame a real anchor: focusable,
+                middle-clickable, and openable in a new tab like any other
+                project link. The cue only appears on hover, so the resting
+                composition stays as authored. */}
+            {activeProject.slug ? (
+              <Link
+                href={`/${locale}/work/${activeProject.slug}`}
+                className="timeline-media-link"
+                aria-label={`${dictionary.viewProject}: ${activeProject.title}`}
+              >
+                <span className="timeline-media-cue font-data" aria-hidden="true">
+                  {dictionary.viewProject} ↗
+                </span>
+              </Link>
+            ) : null}
           </div>
 
           <div className="timeline-project-layers">
@@ -890,12 +906,9 @@ export function ArchivePrototype({
                     </p>
                     <h2>{project.title}</h2>
                     <p className="timeline-project-meta font-data">
-                      <span>{project.year ?? "YEAR TBC"}</span>
+                      <span>{project.year ?? dictionary.yearTbc}</span>
                       <span>
-                        {projectRole(project) ??
-                          (isPortuguese
-                            ? "FUNÇÃO A CONFIRMAR"
-                            : "ROLE TO BE CONFIRMED")}
+                        {projectRole(project) ?? dictionary.roleTbc}
                       </span>
                     </p>
                   </div>
@@ -938,7 +951,7 @@ export function ArchivePrototype({
           </div>
 
           <p className="timeline-side-label timeline-side-label-left font-data">
-            {isPortuguese ? "ROLAR / EXPLORAR" : "SCROLL / EXPLORE"}
+            {dictionary.scrollExplore}
           </p>
           <p className="timeline-side-label timeline-side-label-right font-data">
             {activeProject.year ?? "YEAR TBC"}
@@ -948,7 +961,7 @@ export function ArchivePrototype({
 
       <section id="project-index" className="timeline-index">
         <div className="timeline-index-heading">
-          <p className="font-data">{isPortuguese ? "ÍNDICE" : "INDEX"}</p>
+          <p className="font-data">{dictionary.indexLabel}</p>
           <h2>
             <BlurText
               text={indexHeading}
@@ -967,7 +980,7 @@ export function ArchivePrototype({
 
         <ol
           className="timeline-index-list"
-          aria-label={isPortuguese ? "Projetos" : "Projects"}
+          aria-label={dictionary.projects}
         >
           {projects.map((project, index) => {
             const active = index === activeIndex
@@ -977,13 +990,13 @@ export function ArchivePrototype({
                   type="button"
                   className="timeline-index-row"
                   aria-current={active ? "true" : undefined}
-                  onClick={() => scrollToProject(index)}
+                  onClick={() => goToProject(index)}
                 >
                   <span className="font-data">{formatIndex(index)}</span>
                   <span>{project.title}</span>
                   <span className="font-data">{project.year ?? "—"}</span>
                   <span className="font-data">
-                    {active ? "ACTIVE" : "LOCATE"}
+                    {active ? dictionary.nowShowing : dictionary.viewProject}
                   </span>
                 </button>
               </li>

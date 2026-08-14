@@ -302,6 +302,95 @@ export const Site: GlobalConfig = {
 
         // ------------------------------------------------------------------
         {
+          label: 'About',
+          fields: [
+            {
+              name: 'about',
+              type: 'group',
+              label: false,
+              admin: {
+                description: 'The /about page. Leave the biography empty to fall back to the “about” text item on the desktop.',
+              },
+              fields: [
+                {
+                  name: 'heading',
+                  type: 'text',
+                  localized: true,
+                  admin: {
+                    description: 'Page heading. Falls back to the site tagline.',
+                  },
+                },
+                {
+                  name: 'standfirst',
+                  type: 'textarea',
+                  localized: true,
+                  admin: {
+                    description: 'One or two sentences under the heading, before the biography.',
+                  },
+                },
+                {
+                  name: 'bio',
+                  type: 'richText',
+                  localized: true,
+                  label: 'Biography',
+                },
+                {
+                  name: 'portrait',
+                  type: 'upload',
+                  relationTo: 'media',
+                  admin: {
+                    description: 'Falls back to the identity avatar.',
+                  },
+                },
+                {
+                  name: 'disciplines',
+                  type: 'array',
+                  labels: {
+                    singular: 'Discipline',
+                    plural: 'Disciplines',
+                  },
+                  admin: {
+                    description: 'What you actually do, e.g. Direction, Motion, Identity.',
+                  },
+                  fields: [
+                    {
+                      name: 'label',
+                      type: 'text',
+                      required: true,
+                      localized: true,
+                    },
+                  ],
+                },
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'basedIn',
+                      type: 'text',
+                      localized: true,
+                      admin: {
+                        width: '50%',
+                        description: 'e.g. Lisbon, Portugal.',
+                      },
+                    },
+                    {
+                      name: 'availability',
+                      type: 'text',
+                      localized: true,
+                      admin: {
+                        width: '50%',
+                        description: 'e.g. Taking commissions from March.',
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+
+        // ------------------------------------------------------------------
+        {
           label: 'Contact & socials',
           fields: [
             {
@@ -321,6 +410,22 @@ export const Site: GlobalConfig = {
                   type: 'text',
                   localized: true,
                   defaultValue: 'Contact',
+                },
+                {
+                  name: 'intro',
+                  type: 'textarea',
+                  localized: true,
+                  admin: {
+                    description: 'Short line at the top of the /contact page.',
+                  },
+                },
+                {
+                  name: 'availability',
+                  type: 'text',
+                  localized: true,
+                  admin: {
+                    description: 'What a visitor can expect, e.g. Replies within two days.',
+                  },
                 },
                 {
                   name: 'rows',

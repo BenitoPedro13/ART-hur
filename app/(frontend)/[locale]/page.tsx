@@ -1,9 +1,13 @@
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { ArchivePrototype } from "@/components/archive/archive-prototype"
+import { compact, StructuredData } from "@/components/site/structured-data"
 import { isLocale } from "@/lib/i18n"
+import { mediaOgSize, mediaUrl } from "@/lib/media"
 import { getDesktopItems, getSite } from "@/lib/payload"
-import type { Project } from "@/payload-types"
+import { selectedProjects } from "@/lib/projects"
+import { buildMetadata, personSchema, websiteSchema } from "@/lib/seo"
 
 /**
  * Rendered per request rather than prerendered.
@@ -13,6 +17,40 @@ import type { Project } from "@/payload-types"
  * for a redeploy.
  */
 export const dynamic = "force-dynamic"
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  if (!isLocale(locale)) return {}
+
+  // A database blip must not take the page down; the layout supplies a title.
+  let site: Awaited<ReturnType<typeof getSite>>
+  try {
+    site = await getSite(locale)
+  } catch {
+    return {}
+  }
+
+  const metadata = buildMetadata({
+    locale,
+    path: "",
+    site,
+    description: site.tagline ?? site.seo?.siteDescription,
+    image: mediaUrl(site.seo?.ogImage, "hero"),
+    imageAlt: site.ownerName,
+    ...mediaOgSize(site.seo?.ogImage),
+  })
+
+  // The home is the one page whose title should not gain the "— ART'hur"
+  // suffix the layout template appends.
+  return {
+    ...metadata,
+    title: { absolute: site.seo?.siteTitle || site.ownerName },
+  }
+}
 
 export default async function ArchivePage({
   params,
@@ -30,24 +68,23 @@ export default async function ArchivePage({
     getDesktopItems(locale),
   ])
 
-  const projects = items
-    .flatMap((item) => (item.type === "folder" ? (item.projects ?? []) : []))
-    .filter((project): project is Project => typeof project === "object")
-    .filter(
-      (project, index, all) =>
-        all.findIndex((candidate) => candidate.id === project.id) === index
-    )
-    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  // Shared with /index and /work so all three agree on order and membership.
+  const projects = selectedProjects(items)
 
-  const contactHref = site.contact?.rows?.find((row) => row.href)?.href ?? null
+  const schema = {
+    "@context": "https://schema.org",
+    "@graph": [compact(websiteSchema(site, locale)), compact(personSchema(site, locale))],
+  }
 
   return (
-    <ArchivePrototype
-      contactHref={contactHref}
-      locale={locale}
-      ownerName={site.ownerName}
-      projects={projects}
-      tagline={site.tagline ?? null}
-    />
+    <>
+      <StructuredData data={schema} />
+      <ArchivePrototype
+        locale={locale}
+        ownerName={site.ownerName}
+        projects={projects}
+        tagline={site.tagline ?? null}
+      />
+    </>
   )
 }

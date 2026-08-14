@@ -44,3 +44,22 @@ export function mediaDimensions(value: number | Media | null | undefined) {
     height: media?.height ?? 900,
   }
 }
+
+/**
+ * A media doc's true pixel size, shaped for `buildMetadata`.
+ *
+ * Kept separate from `mediaDimensions`, which supplies 1600×900 defaults so
+ * `next/image` always has an aspect ratio to reserve. Open Graph must not
+ * guess: a wrong `og:image:width` tells the platform to crop for a shape the
+ * file does not have. Unknown means absent.
+ */
+export function mediaOgSize(value: number | Media | null | undefined): {
+  imageWidth?: number
+  imageHeight?: number
+} {
+  const media = resolveMedia(value)
+
+  if (!media?.width || !media?.height) return {}
+
+  return { imageWidth: media.width, imageHeight: media.height }
+}

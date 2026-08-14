@@ -2,7 +2,7 @@ import sharp from 'sharp'
 import type { CollectionSlug, Payload } from 'payload'
 
 import type { Config } from '../../payload-types'
-import type { SeedSet } from './seed-sets'
+import { DEMO_SET, PLACEHOLDER_SET, type SeedSet } from './seed-sets'
 import { defaultLocale, locales, toPayloadLocale } from '../../lib/locales'
 
 type PayloadLocale = Config['locale']
@@ -358,8 +358,67 @@ export async function removeSeedSet(payload: Payload, set: SeedSet) {
     })
   }
 
-  await payload.delete({
+  /**
+   * `like` is a substring match, so deleting on the raw prefix also destroys
+   * uploads that merely contain it — `arthur-pimenta.jpg` is a real portrait,
+   * not seed output. Re-check the prefix in JS before deleting anything.
+   */
+  const { docs } = await payload.find({
     collection: 'media',
     where: { filename: { like: set.mediaPrefix } },
+    limit: 500,
+    depth: 0,
   })
+
+  for (const doc of docs) {
+    if (!doc.filename?.startsWith(set.mediaPrefix)) continue
+
+    await payload.delete({ collection: 'media', id: doc.id })
+  }
+}
+
+/**
+ * Refuses to seed over content that is not this seed's own.
+ *
+ * The seeds upsert by slug, which sounds safe but is not: `selected-work` is a
+ * seeded folder, so re-seeding rewrites its project list. If real projects were
+ * curated into it they get orphaned — still in the database, no longer on the
+ * site — and the Site global is overwritten with placeholder copy at the same
+ * time. Seeds are for empty or placeholder databases only.
+ *
+ * Pass `--force` to seed anyway.
+ */
+export async function assertSeedSafe(payload: Payload, set: SeedSet) {
+  if (process.argv.includes('--force')) {
+    payload.logger.warn('--force: seeding over existing content.')
+    return
+  }
+
+  const { docs: projects } = await payload.find({
+    collection: 'projects',
+    where: { slug: { not_in: [...set.projects, ...otherSeedProjectSlugs(set)] } },
+    limit: 10,
+    depth: 0,
+  })
+
+  if (projects.length === 0) return
+
+  const names = projects.map((project) => project.slug).join(', ')
+
+  throw new Error(
+    [
+      `This database holds ${projects.length} project(s) that no seed owns: ${names}.`,
+      'Seeding would rewrite the seeded folder\'s project list and overwrite the Site global,',
+      'orphaning that work. Nothing has been changed.',
+      '',
+      'Re-run with --force only if you genuinely want the placeholder content back.',
+    ].join('\n')
+  )
+}
+
+/** Both seeds' project slugs, so one seed does not block on the other's. */
+function otherSeedProjectSlugs(set: SeedSet): string[] {
+  const all = [PLACEHOLDER_SET, DEMO_SET]
+
+  return all.filter((candidate) => candidate !== set).flatMap((candidate) => candidate.projects)
 }

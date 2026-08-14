@@ -30,6 +30,48 @@ The Payload project data is still provisional seed content. The interface is an 
 - React Bits `RippleDistortion` provides a restrained local hover disturbance over the stable active image. It is suppressed during transitions, reduced motion, touch-only use, and inactive hover state.
 - DOM imagery remains underneath both WebGL layers as the fallback.
 
+## Routes
+
+| Route | Surface | What it is |
+| --- | --- | --- |
+| `/{locale}` | Vinyl Black | The archive stage: one centred project, morphing in place, walked by the `芸` glyph. The hero image links into the project. |
+| `/{locale}/work/[slug]` | Vinyl Black | The case study. Slate, hero media, context, and the gallery in an authored rhythm. |
+| `/{locale}/index` | Newsprint | Every project as a contact sheet, with a loupe on hover. The complete low-motion path through the work. |
+| `/{locale}/about` | Newsprint | The practice statement. The one place the Living Tag runs at display scale. |
+| `/{locale}/contact` | Vinyl Black | Direct paths first, form second. Works with JavaScript disabled. |
+| `/admin` | — | Payload CMS |
+
+### The two surfaces
+
+The site declares two surfaces and cuts between them, with no cross-route fade:
+the **room** (Vinyl Black) for media-led routes and the **sheet** (Newsprint)
+for reading. Interior pages stamp `data-surface` on their root element and
+`globals.css` paints the canvas to match, so overscroll never reveals the wrong
+colour.
+
+The dashed line the walker crosses on the home page becomes the interior ruling
+stroke — same 8/6 dash, horizontal and still — carrying a **slate** of real
+production metadata under each heading. The walker itself never appears again:
+it is a sula, not a texture.
+
+## SEO
+
+- `lib/seo.ts` builds every route's metadata: canonical, `hreflang` for each
+  locale plus `x-default`, Open Graph, and a `summary_large_image` Twitter card.
+- Open Graph images come from real content — a project's own cover, the
+  portrait on `/about`, the lead project on `/index` — and declare the file's
+  true dimensions rather than a stock 1200×630, so portrait photography is not
+  cropped as though it were a landscape card.
+- JSON-LD per route: `WebSite` + `Person` on the home, `VisualArtwork` +
+  `BreadcrumbList` on a project, `CollectionPage` + `ItemList` on the index,
+  `ProfilePage` and `ContactPage` on the other two.
+- `app/robots.ts` blocks indexing on every non-production deployment.
+  It must stay at the app root — inside the `(frontend)` route group Next
+  silently does not register it.
+- `app/(frontend)/sitemap.ts` lists every route in every locale with
+  `alternates.languages`, rebuilt per request so curated changes appear.
+- Set `NEXT_PUBLIC_SITE_URL` once a custom domain is attached.
+
 ## First run
 
 ```bash
@@ -49,9 +91,15 @@ PORTFOLIO_DEFAULT_LOCALE=pt
 Then seed starter content and run the app:
 
 ```bash
-pnpm seed
+pnpm seed   # empty or placeholder databases only — see below
 pnpm dev
 ```
+
+> `pnpm seed` and `pnpm seed:demo` upsert by slug, which includes the
+> `selected-work` folder and the whole Site global. Run against a database that
+> already holds real work, they rewrite the folder's project list and replace
+> the site copy with placeholders. Both now refuse to run when they find a
+> project no seed owns; `--force` overrides.
 
 - Public site: `http://localhost:3000`
 - Admin: `http://localhost:3000/admin`

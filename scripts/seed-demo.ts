@@ -16,6 +16,7 @@ import { getPayload } from 'payload'
 
 import config from '../payload.config'
 import {
+  assertSeedSafe,
   placeholderImage,
   pick,
   removeSeedSet,
@@ -23,7 +24,7 @@ import {
   upsertBySlug,
   upsertSite,
 } from './lib/seed-helpers'
-import { PLACEHOLDER_SET } from './lib/seed-sets'
+import { DEMO_SET, PLACEHOLDER_SET } from './lib/seed-sets'
 
 const SAMPLE_MP4 =
   'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
@@ -160,6 +161,8 @@ const projects = [
 
 async function seed() {
   const payload = await getPayload({ config })
+
+  await assertSeedSafe(payload, DEMO_SET)
 
   payload.logger.info('Seeding demo content…')
 

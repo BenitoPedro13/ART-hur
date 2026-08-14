@@ -178,52 +178,18 @@
     mix-blend-mode: soft-light;
   }
 
-  .timeline-header {
-    position: fixed;
-    z-index: 60;
-    top: 0;
-    right: 0;
-    left: 0;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    min-height: 4.25rem;
-    padding: 0 1.5rem;
-    color: white;
-    mix-blend-mode: difference;
-  }
-
-  .timeline-brand,
-  .timeline-header-nav a,
+  /* The home's header markup moved to the shared `SiteHeader`; only the
+     in-page text link and index-row focus styles are still the timeline's. */
   .timeline-text-link {
     color: inherit;
     text-decoration: none;
   }
 
-  .timeline-brand {
-    width: fit-content;
-  }
-
-  .timeline-header-position {
-    margin: 0;
-    font-size: 0.52rem;
-    opacity: 0.58;
-  }
-
-  .timeline-header-nav {
-    display: flex;
-    justify-content: flex-end;
-    gap: clamp(1rem, 2vw, 2.5rem);
-    font-size: 0.52rem;
-  }
-
-  .timeline-header a,
   .timeline-index-row,
   .timeline-text-link {
     outline-offset: 0.35rem;
   }
 
-  .timeline-header a:focus-visible,
   .timeline-index-row:focus-visible,
   .timeline-text-link:focus-visible {
     outline: 2px solid var(--ring);
@@ -705,19 +671,6 @@
   }
 
   @media (max-width: 900px) {
-    .timeline-header {
-      grid-template-columns: 1fr auto;
-      padding: 0 1rem;
-    }
-
-    .timeline-header-position {
-      display: none;
-    }
-
-    .timeline-header-nav {
-      gap: 1rem;
-    }
-
     .timeline-frame {
       inset: 4.25rem 1rem 1rem;
     }
@@ -777,10 +730,6 @@
   }
 
   @media (max-width: 520px) {
-    .timeline-header-nav a:first-child {
-      display: none;
-    }
-
     .timeline-scroll {
       height: calc(var(--timeline-count) * 102svh);
     }
@@ -868,6 +817,1184 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ==========================================================================
+   Interior routes — /work/[slug], /index, /about, /contact
+   ==========================================================================
+
+   The home is one room: Vinyl Black, cinematic, walked by the 芸 glyph. The
+   interior declares a surface and cuts to it. Text-led routes flip to the
+   Newsprint sheet the home already uses for its index band; media-led routes
+   stay in the room.
+
+   The walker never appears again — it is a sula, not a texture — but the
+   dashed line it walks on becomes the interior ruling stroke. Same 8/6 dash
+   geometry as `.timeline-route-line`, now horizontal and still, carrying the
+   slate of real production metadata under each heading.
+   -------------------------------------------------------------------------- */
+
+:root {
+  /* The sheet. Inverse of the room, mapped from the same two brand values. */
+  --sheet: #e9e2d2; /* Newsprint */
+  --sheet-ink: #0b0b0a; /* Vinyl Black */
+  --sheet-rule: rgb(11 11 10 / 0.24);
+  --sheet-muted: rgb(11 11 10 / 0.58);
+
+  --room: #0b0b0a;
+  --room-ink: #e9e2d2;
+  --room-rule: rgb(233 226 210 / 0.2);
+  --room-muted: rgb(233 226 210 / 0.58);
+
+  /* Motion. Cuts land, then settle — nothing here eases in both directions. */
+  --ease-cut: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-settle: cubic-bezier(0.2, 0.62, 0.22, 1);
+  --dur-quick: 180ms;
+  --dur-base: 380ms;
+  --dur-reveal: 820ms;
+
+  --shell-header-h: 4.25rem;
+  --shell-gutter: clamp(1rem, 4vw, 3.5rem);
+  --shell-max: 96rem;
+}
+
+@layer base {
+  /* --- Type scale, spec §6 -----------------------------------------------
+     Display XL is reserved for the Living Tag on /about. Display L carries
+     project titles. Body L is the reading size for narrative copy. */
+
+  .type-display-xl {
+    font-family: var(--font-heading);
+    font-size: clamp(4.5rem, 14vw, 13rem);
+    font-weight: 800;
+    line-height: 0.78;
+    letter-spacing: -0.075em;
+  }
+
+  .type-display-l {
+    font-family: var(--font-heading);
+    font-size: clamp(3rem, 8vw, 8rem);
+    font-weight: 520;
+    line-height: 0.84;
+    letter-spacing: -0.065em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  .type-heading-m {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 4vw, 4.5rem);
+    font-weight: 520;
+    line-height: 0.9;
+    letter-spacing: -0.055em;
+    text-wrap: balance;
+  }
+
+  .type-body-l {
+    font-size: clamp(1.05rem, 1.4vw, 1.375rem);
+    line-height: 1.55;
+    letter-spacing: -0.005em;
+  }
+
+  /* --- The rule ----------------------------------------------------------
+     8 units on, 6 off — the exact dash of the route the walker crosses.
+     `currentColor` lets it invert with the surface at no extra cost. */
+
+  .rule-dashed {
+    height: 1.5px;
+    border: 0;
+    margin: 0;
+    background-image: repeating-linear-gradient(
+      to right,
+      currentColor 0 8px,
+      transparent 8px 14px
+    );
+    opacity: 0.85;
+  }
+
+  /* --- Surfaces ----------------------------------------------------------- */
+
+  /* The browser paints html's colour in the canvas margins, so a sheet route
+     that only colours its own <main> shows a black band under overscroll. */
+  html:has([data-surface="sheet"]) {
+    background: var(--sheet);
+    color-scheme: light;
+  }
+
+  .shell-page {
+    /* Interior utility type sits at the spec's 0.6875rem floor. The home's
+       0.48rem is a deliberate cinematic choice; reading pages don't inherit it. */
+    --data-size: 0.6875rem;
+    position: relative;
+    display: flex;
+    min-height: 100svh;
+    flex-direction: column;
+  }
+
+  .shell-page .font-data {
+    font-size: var(--data-size);
+  }
+
+  .shell-page[data-surface="sheet"] {
+    --surface-rule: var(--sheet-rule);
+    --surface-muted: var(--sheet-muted);
+    background: var(--sheet);
+    color: var(--sheet-ink);
+  }
+
+  .shell-page[data-surface="room"] {
+    --surface-rule: var(--room-rule);
+    --surface-muted: var(--room-muted);
+    background: var(--room);
+    color: var(--room-ink);
+  }
+
+  .shell-main {
+    flex: 1;
+    padding-top: calc(var(--shell-header-h) + clamp(2rem, 6vw, 5.5rem));
+    padding-bottom: clamp(4rem, 10vw, 8rem);
+  }
+
+  .shell-inner {
+    width: 100%;
+    max-width: var(--shell-max);
+    margin-inline: auto;
+    padding-inline: var(--shell-gutter);
+  }
+
+  .shell-muted {
+    color: var(--surface-muted);
+  }
+
+  /* --- Global header -------------------------------------------------------
+     One header for every route. `difference` blending means it inverts itself
+     over project media, the room, and the sheet with no per-route styling. */
+
+  .shell-header {
+    position: fixed;
+    z-index: 60;
+    top: 0;
+    right: 0;
+    left: 0;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    min-height: var(--shell-header-h);
+    padding: 0 1.5rem;
+    color: white;
+    mix-blend-mode: difference;
+  }
+
+  .shell-brand,
+  .shell-header-nav a,
+  .shell-text-link {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .shell-brand {
+    width: fit-content;
+  }
+
+  .shell-header-slate {
+    margin: 0;
+    font-size: 0.52rem;
+    opacity: 0.58;
+    text-align: center;
+  }
+
+  .shell-header-nav {
+    display: flex;
+    justify-content: flex-end;
+    gap: clamp(1rem, 2vw, 2.5rem);
+    font-size: 0.52rem;
+  }
+
+  .shell-header-nav a {
+    /* 44px touch target without the link box growing visibly. */
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+
+  .shell-header-nav a[aria-current="page"] {
+    text-decoration: underline;
+    text-underline-offset: 0.4em;
+  }
+
+  .shell-header a,
+  .shell-text-link {
+    outline-offset: 0.35rem;
+  }
+
+  .shell-header a:focus-visible,
+  .shell-text-link:focus-visible {
+    outline: 2px solid var(--ring);
+  }
+
+  /* --- Slate ---------------------------------------------------------------
+     The dashed rule plus the page's real metadata. Nothing here is invented:
+     every term is a field an editor filled in. */
+
+  .slate {
+    display: grid;
+    gap: 1.15rem;
+  }
+
+  .slate-rows {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem clamp(1.75rem, 4vw, 3.5rem);
+    margin: 0;
+  }
+
+  .slate-row {
+    display: grid;
+    gap: 0.3rem;
+    min-width: 0;
+  }
+
+  .slate-term {
+    margin: 0;
+    color: var(--surface-muted);
+  }
+
+  .slate-value {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.3;
+  }
+
+  /* --- Footer colophon ----------------------------------------------------- */
+
+  .shell-footer {
+    padding-block: clamp(2.5rem, 5vw, 4rem) clamp(2rem, 4vw, 3rem);
+  }
+
+  .shell-footer-rule {
+    margin-bottom: clamp(1.75rem, 3vw, 2.5rem);
+  }
+
+  .shell-footer-grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.5rem 2.5rem;
+  }
+
+  .shell-footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .shell-footer a {
+    color: inherit;
+    text-decoration: none;
+    outline-offset: 0.3rem;
+    transition: color var(--dur-quick) ease;
+  }
+
+  .shell-footer a:hover {
+    color: var(--primary);
+  }
+
+  .shell-footer a:focus-visible {
+    outline: 2px solid var(--ring);
+  }
+
+  .shell-footer-note {
+    margin: 0;
+    color: var(--surface-muted);
+  }
+
+  /* --- Reveal ---------------------------------------------------------------
+     The one motion device on /work. The hidden state only applies once the
+     client component has stamped `pending`, so a no-JS or pre-hydration render
+     shows the image outright. */
+
+  [data-reveal="pending"] {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+
+  [data-reveal="in"] {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    transition:
+      opacity var(--dur-reveal) var(--ease-settle),
+      clip-path var(--dur-reveal) var(--ease-settle);
+  }
+}
+
+@layer base {
+  /* --- /index — the archive printed ---------------------------------------
+     Dense, keyboard-first, and sula-free per the spec's region table. The one
+     affordance is the loupe: a fixed frame in the aside that loads whichever
+     row the pointer or focus is on, so scanning reads as flipping negatives
+     rather than dragging a card around. Nothing lives only in that frame —
+     title, year, and frame count are always in the row itself. */
+
+  .index-layout {
+    display: grid;
+    grid-template-columns: minmax(16rem, 0.55fr) minmax(0, 1.45fr);
+    gap: clamp(2.5rem, 6vw, 7rem);
+    align-items: start;
+  }
+
+  .index-aside {
+    position: sticky;
+    top: calc(var(--shell-header-h) + 2rem);
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .index-heading {
+    max-width: 14ch;
+    margin: 0;
+  }
+
+  .index-slate {
+    margin-top: 0.5rem;
+  }
+
+  /* A reference frame, not a hero. Capped so the sticky column always fits on
+     one screen and the list stays the dominant thing on the page. */
+  .index-loupe {
+    position: relative;
+    display: grid;
+    max-width: 22rem;
+    margin: 1.5rem 0 0;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border: 1px solid var(--sheet-rule);
+    background: rgb(11 11 10 / 0.06);
+  }
+
+  .index-loupe-image {
+    object-fit: cover;
+  }
+
+  .index-loupe-caption {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    padding: 0.6rem 0.75rem;
+    background: linear-gradient(transparent, rgb(11 11 10 / 0.72));
+    color: var(--sheet);
+  }
+
+  .index-list {
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--sheet-rule);
+    list-style: none;
+  }
+
+  .index-row {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr) 7rem 4.5rem 1.5rem;
+    gap: 1rem;
+    align-items: center;
+    min-height: 5.5rem;
+    padding: 0 0.85rem;
+    border-bottom: 1px solid var(--sheet-rule);
+    color: inherit;
+    text-decoration: none;
+    /* Padding, not margin: the row inverts to the room on hover and the block
+       should grow into the gutter rather than shift its neighbours. */
+    margin-inline: -0.85rem;
+    transition:
+      background var(--dur-quick) ease,
+      color var(--dur-quick) ease;
+  }
+
+  .index-row-thumb {
+    display: none;
+  }
+
+  .index-row-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.2rem, 2vw, 2rem);
+    font-weight: 600;
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  .index-row-frames,
+  .index-row-year {
+    color: var(--sheet-muted);
+  }
+
+  .index-row-year,
+  .index-row-go {
+    text-align: right;
+  }
+
+  .index-row:hover,
+  .index-row:focus-visible {
+    background: var(--room);
+    color: var(--room-ink);
+    outline: none;
+  }
+
+  .index-row:hover .index-row-frames,
+  .index-row:hover .index-row-year,
+  .index-row:focus-visible .index-row-frames,
+  .index-row:focus-visible .index-row-year {
+    color: rgb(233 226 210 / 0.62);
+  }
+
+  .index-row:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+
+  /* --- /work — the case study ---------------------------------------------
+     Stays in the room: these photographs were art-directed against black. One
+     assertive element, the hero. The sequence below it is the argument. */
+
+  .work-head {
+    display: grid;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .work-title {
+    max-width: 16ch;
+    margin: 0;
+  }
+
+  .work-hero {
+    margin-top: clamp(2.5rem, 6vw, 5rem);
+  }
+
+  .work-hero-media {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 82svh;
+    border: 1px solid var(--room-rule);
+    background: #0d0c0a;
+    object-fit: cover;
+  }
+
+  /* An iframe has no intrinsic ratio to fill from. */
+  iframe.work-hero-media {
+    aspect-ratio: 16 / 9;
+    max-height: none;
+  }
+
+  .work-context {
+    display: grid;
+    grid-template-columns: minmax(8rem, 0.3fr) minmax(0, 1fr);
+    gap: clamp(1.5rem, 4vw, 4rem);
+    margin-top: clamp(3rem, 7vw, 6rem);
+  }
+
+  .work-context-label {
+    margin: 0;
+  }
+
+  .work-prose {
+    max-width: 62ch;
+  }
+
+  .work-sequence {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: clamp(1.5rem, 3vw, 3rem) clamp(1rem, 2vw, 2rem);
+    margin-top: clamp(3.5rem, 8vw, 7rem);
+  }
+
+  .work-figure {
+    display: grid;
+    /* The image carries its own grid-column from the authored rhythm, so the
+       figure spans the field and lets the image place itself inside it. */
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 0.6rem;
+    margin: 0;
+  }
+
+  .work-figure-lift {
+    margin-top: clamp(-4rem, -5vw, -1.5rem);
+  }
+
+  .work-figure-image {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--room-rule);
+  }
+
+  .work-caption {
+    grid-column: 1 / -1;
+    color: var(--room-muted);
+  }
+
+  .work-next {
+    margin-top: clamp(4rem, 10vw, 9rem);
+  }
+
+  .work-next-link {
+    position: relative;
+    display: grid;
+    align-content: center;
+    gap: 0.75rem;
+    min-height: 44svh;
+    padding: clamp(2.5rem, 6vw, 5rem) var(--shell-gutter);
+    overflow: hidden;
+    border-block: 1px solid var(--room-rule);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .work-next-cover {
+    z-index: 0;
+    opacity: 0.22;
+    object-fit: cover;
+    transition:
+      opacity var(--dur-base) var(--ease-settle),
+      transform var(--dur-reveal) var(--ease-settle);
+  }
+
+  .work-next-link:hover .work-next-cover,
+  .work-next-link:focus-visible .work-next-cover {
+    opacity: 0.38;
+    transform: scale(1.03);
+  }
+
+  .work-next-label,
+  .work-next-title {
+    position: relative;
+    z-index: 1;
+  }
+
+  .work-next-label {
+    color: var(--room-muted);
+  }
+
+  .work-next-title {
+    max-width: 16ch;
+  }
+
+  .work-next-link:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -3px;
+  }
+
+  .work-next-back {
+    padding-top: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  /* --- /about — the sheet, and the one full-size mark ---------------------- */
+
+  .about-mark {
+    margin: 0;
+    color: var(--sheet-ink);
+  }
+
+  .about-standfirst {
+    max-width: 42ch;
+    margin: clamp(1.5rem, 3vw, 2.5rem) 0 0;
+  }
+
+  .about-slate {
+    margin-top: clamp(2rem, 4vw, 3rem);
+  }
+
+  .about-body {
+    display: grid;
+    grid-template-columns: minmax(0, 0.4fr) minmax(0, 1fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    margin-top: clamp(3rem, 6vw, 5.5rem);
+    align-items: start;
+  }
+
+  .about-portrait {
+    margin: 0;
+    /* The spec lets selected media crops break the grid; this is the one that
+       does, pulling left into the outer frame. */
+    margin-left: calc(var(--shell-gutter) * -1);
+  }
+
+  .about-portrait-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--sheet-rule);
+    filter: grayscale(1) contrast(1.06);
+  }
+
+  .about-heading {
+    max-width: 18ch;
+    margin: 0 0 clamp(1.25rem, 2vw, 2rem);
+  }
+
+  .about-prose {
+    max-width: 62ch;
+  }
+
+  .about-cta {
+    margin: clamp(2rem, 4vw, 3rem) 0 0;
+  }
+
+  .about-cta a {
+    color: var(--primary);
+  }
+
+  /* --- /contact — flat, quiet, dependable ---------------------------------- */
+
+  .contact-heading {
+    max-width: 14ch;
+    margin: 0.75rem 0 0;
+  }
+
+  .contact-intro {
+    max-width: 46ch;
+    margin: clamp(1.25rem, 2vw, 2rem) 0 0;
+  }
+
+  .contact-slate {
+    margin-top: clamp(2rem, 4vw, 3rem);
+  }
+
+  .contact-rows {
+    margin: clamp(2.5rem, 5vw, 4rem) 0 0;
+    padding: 0;
+    border-top: 1px solid var(--room-rule);
+    list-style: none;
+  }
+
+  .contact-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.35rem 2rem;
+    align-items: baseline;
+    min-height: 4.5rem;
+    padding: 1.1rem 0 1.1rem 1.25rem;
+    border-bottom: 1px solid var(--room-rule);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* The only motion on this page: one rule arriving under the pointer. */
+  .contact-row::before {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    content: "";
+    background: var(--primary);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform var(--dur-base) var(--ease-cut);
+  }
+
+  .contact-row:hover::before,
+  .contact-row:focus-visible::before {
+    transform: scaleY(1);
+  }
+
+  .contact-row:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+
+  .contact-row-label {
+    font-family: var(--font-heading);
+    font-size: clamp(1.35rem, 2.4vw, 2.25rem);
+    font-weight: 520;
+    line-height: 1;
+    letter-spacing: -0.045em;
+  }
+
+  .contact-row-destination {
+    grid-row: 1;
+    grid-column: 2;
+    color: var(--room-muted);
+  }
+
+  .contact-row-subtitle {
+    grid-column: 1;
+    color: var(--room-muted);
+  }
+
+  .contact-socials {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .contact-socials p {
+    margin: 0;
+  }
+
+  .contact-socials-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .contact-socials-list a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: inherit;
+    text-decoration: none;
+    outline-offset: 0.3rem;
+  }
+
+  .contact-socials-list a:hover {
+    color: var(--primary);
+  }
+
+  .contact-socials-list a:focus-visible {
+    outline: 2px solid var(--ring);
+  }
+
+  /* --- Contact form --------------------------------------------------------
+     Task-bound UI, so no sula and no ornament: ruled fields on the room, mono
+     labels, and one assertive colour reserved for the submit. */
+
+  .contact-form-section {
+    display: grid;
+    gap: clamp(1.25rem, 2vw, 2rem);
+    margin-top: clamp(3.5rem, 7vw, 6rem);
+  }
+
+  .contact-form-heading {
+    max-width: 16ch;
+    margin: 0;
+  }
+
+  .contact-form-intro {
+    max-width: 46ch;
+    margin: 0;
+    color: var(--room-muted);
+  }
+
+  .contact-form {
+    display: grid;
+    gap: 1.75rem;
+    max-width: 34rem;
+  }
+
+  /* `display: none`, not off-screen.
+     An off-screen input is still a live field to Chrome and Edge autofill,
+     which filled it with the visitor's own email address. The API treats any
+     value here as a bot and answers `{ok:true}` without sending — so a real
+     enquiry reported success and vanished. `display: none` is the one state
+     autofill skips. It costs a little bot resistance and buys back every
+     message Arthur was silently losing. */
+  .contact-form-honeypot {
+    display: none;
+  }
+
+  .contact-field {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .contact-field label {
+    color: var(--room-muted);
+    transition: color var(--dur-quick) ease;
+  }
+
+  .contact-field input,
+  .contact-field select,
+  .contact-field textarea {
+    width: 100%;
+    padding: 0.65rem 0;
+    border: 0;
+    border-bottom: 1px solid var(--input);
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    transition:
+      border-color var(--dur-quick) ease,
+      box-shadow var(--dur-quick) ease;
+  }
+
+  /* Native select chrome does not take the ruled treatment, so it is replaced
+     with the same chevron the rest of the archive would draw. */
+  .contact-field select {
+    appearance: none;
+    padding-right: 1.75rem;
+    background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position:
+      calc(100% - 0.85rem) 1.15rem,
+      calc(100% - 0.5rem) 1.15rem;
+    background-size:
+      0.35rem 0.35rem,
+      0.35rem 0.35rem;
+    background-repeat: no-repeat;
+  }
+
+  .contact-field select option {
+    /* Some platforms render the popup on the page background, which would be
+       transparent text on transparent here. */
+    background: var(--room);
+    color: var(--room-ink);
+  }
+
+  .contact-field textarea {
+    min-height: 8rem;
+    resize: vertical;
+  }
+
+  /* One focus indicator, not two.
+     The field previously drew a 2px outline box *and* recoloured its underline,
+     which together read as a validation error rather than a cursor position.
+     Focus now thickens the field's own rule to 2px in the focus accent — a
+     single mark, high contrast against Vinyl Black, and quiet enough for
+     task-bound UI. */
+  .contact-field input:focus-visible,
+  .contact-field select:focus-visible,
+  .contact-field textarea:focus-visible {
+    outline: none;
+    border-bottom-color: var(--ring);
+    box-shadow: 0 1px 0 0 var(--ring);
+  }
+
+  .contact-field:focus-within label {
+    color: var(--room-ink);
+  }
+
+  /* Only after the browser has actually reported the field invalid — `:invalid`
+     alone would paint every required field red before it is even touched. */
+  .contact-field input:user-invalid,
+  .contact-field select:user-invalid,
+  .contact-field textarea:user-invalid {
+    border-bottom-color: var(--destructive);
+    box-shadow: 0 1px 0 0 var(--destructive);
+  }
+
+  .contact-submit {
+    justify-self: start;
+    min-height: 2.75rem;
+    padding: 0 1.5rem;
+    border: 1px solid var(--primary);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    cursor: pointer;
+    transition:
+      background var(--dur-quick) ease,
+      color var(--dur-quick) ease;
+  }
+
+  .contact-submit:hover:not(:disabled) {
+    background: transparent;
+    color: var(--primary);
+  }
+
+  .contact-submit:disabled {
+    opacity: 0.6;
+    cursor: progress;
+  }
+
+  .contact-submit:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 0.35rem;
+  }
+
+  .contact-form-success {
+    margin: 0;
+    color: var(--room-ink);
+  }
+
+  .contact-form-error {
+    margin: 0;
+    color: var(--destructive);
+  }
+
+  /* --- Footer locale switch ------------------------------------------------ */
+
+  .shell-locale {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .shell-locale a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    opacity: 0.58;
+  }
+
+  .shell-locale a[aria-current="true"] {
+    opacity: 1;
+    text-decoration: underline;
+    text-underline-offset: 0.4em;
+  }
+
+  /* --- Responsive ---------------------------------------------------------- */
+
+  @media (max-width: 900px) {
+    .index-layout,
+    .work-context,
+    .about-body {
+      grid-template-columns: 1fr;
+    }
+
+    .index-aside {
+      position: static;
+    }
+
+    /* No pointer to hover with, so each row carries its own thumbnail instead
+       of one shared frame that nothing can drive. */
+    .index-loupe {
+      display: none;
+    }
+
+    .index-row {
+      grid-template-columns: 2.5rem 4.5rem minmax(0, 1fr) 4rem;
+      row-gap: 0.35rem;
+    }
+
+    .index-row-thumb {
+      position: relative;
+      display: block;
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
+      border: 1px solid var(--sheet-rule);
+    }
+
+    .index-row-thumb-image {
+      object-fit: cover;
+    }
+
+    .index-row-frames,
+    .index-row-go {
+      display: none;
+    }
+
+    .work-figure-lift {
+      margin-top: 0;
+    }
+
+    /* The authored rhythm needs width to read as composition; below this it
+       would just be a column of arbitrarily narrow images. */
+    .work-figure-image {
+      grid-column: 1 / -1 !important;
+    }
+
+    .about-portrait {
+      max-width: 24rem;
+      margin-left: 0;
+    }
+  }
+
+  @media (hover: none) {
+    .index-loupe {
+      display: none;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .index-row {
+      grid-template-columns: 2rem 3.5rem minmax(0, 1fr);
+      min-height: 5rem;
+    }
+
+    .index-row-year {
+      display: none;
+    }
+
+    .contact-row {
+      grid-template-columns: 1fr;
+    }
+
+    .contact-row-destination {
+      grid-row: auto;
+      grid-column: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* The reveal is the page's only motion; without it the frames simply are. */
+    [data-reveal="pending"],
+    [data-reveal="in"] {
+      opacity: 1;
+      clip-path: none;
+    }
+  }
+}
+
+@layer base {
+  /* --- Home stage: the image is the way into the project --------------------
+     An overlay anchor rather than a click handler on the frame, so the hero
+     behaves like a link — focus, middle-click, open in new tab, and a real
+     accessible name. It sits above the ripple layer and the frame's own
+     gradient, both of which are decorative and ignore pointer events. */
+
+  .timeline-media-link {
+    position: absolute;
+    z-index: 4;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 1rem;
+    color: var(--foreground);
+    text-decoration: none;
+    outline-offset: -3px;
+  }
+
+  .timeline-media-cue {
+    padding: 0.45rem 0.7rem;
+    background: rgb(9 9 8 / 0.72);
+    font-size: 0.5rem;
+    opacity: 0;
+    transform: translateY(0.35rem);
+    transition:
+      opacity var(--dur-base) var(--ease-settle),
+      transform var(--dur-base) var(--ease-settle);
+  }
+
+  .timeline-media-frame[data-media-hover="true"] .timeline-media-cue,
+  .timeline-media-link:focus-visible .timeline-media-cue {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .timeline-media-link:focus-visible {
+    outline: 2px solid var(--ring);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .timeline-media-cue {
+      transition: none;
+    }
+  }
+
+  /* No hover state to reveal it, so the cue is simply always there. */
+  @media (hover: none) {
+    .timeline-media-cue {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@layer base {
+  /* --- Header: narrow widths ------------------------------------------------
+     The three inline links and the position readout collided below ~900px.
+     The readout is atmosphere, so it goes first; the links fold into a panel
+     rather than shrinking past a usable target size. */
+
+  .shell-mobile-nav {
+    display: none;
+    justify-self: end;
+  }
+
+  .shell-menu-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-size: 0.52rem;
+    cursor: pointer;
+    outline-offset: 0.35rem;
+  }
+
+  .shell-menu-button:focus-visible {
+    outline: 2px solid var(--ring);
+  }
+
+  .shell-menu-panel {
+    position: fixed;
+    z-index: 80;
+    inset: 0;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    padding: 0 var(--shell-gutter) 2rem;
+    /* Opaque, and its own surface: the panel is a room, not a scrim over one.
+       It also has to opt out of the header's difference blending. */
+    background: var(--room);
+    color: var(--room-ink);
+    mix-blend-mode: normal;
+    isolation: isolate;
+  }
+
+  /* Focus target on open; it is announced by role and label, so it needs no
+     ring of its own. Tab moves straight on to Close. */
+  .shell-menu-panel:focus {
+    outline: none;
+  }
+
+  .shell-menu-head {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: var(--shell-header-h);
+  }
+
+  .shell-menu-links {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.35rem;
+  }
+
+  .shell-menu-links a {
+    padding: 0.35rem 0;
+    color: inherit;
+    text-decoration: none;
+    font-family: var(--font-heading);
+    font-size: clamp(2.25rem, 11vw, 3.5rem);
+    font-weight: 520;
+    line-height: 1.05;
+    letter-spacing: -0.055em;
+    text-transform: uppercase;
+  }
+
+  .shell-menu-links a[aria-current='page'] {
+    color: var(--primary);
+  }
+
+  .shell-menu-links a:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 0.25rem;
+  }
+
+  .shell-menu-foot {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 900px) {
+    .shell-header {
+      grid-template-columns: 1fr auto;
+      padding: 0 var(--shell-gutter);
+    }
+
+    .shell-header-slate,
+    .shell-header-nav {
+      display: none;
+    }
+
+    .shell-mobile-nav {
+      display: block;
     }
   }
 }

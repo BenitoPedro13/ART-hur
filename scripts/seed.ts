@@ -3,13 +3,20 @@
  *
  *   pnpm seed
  *
- * Safe to re-run: everything is upserted by slug. Replace it from /admin once
- * Arthur's real projects, credits, media, and contact links are confirmed.
+ * For an empty or placeholder database only. Everything is upserted by slug,
+ * which includes the `selected-work` folder and the Site global — so seeding
+ * over real content rewrites the folder's project list and replaces Arthur's
+ * copy with placeholders. `assertSeedSafe` refuses to run in that case; pass
+ * `--force` to override.
+ *
+ * Replace it from /admin once Arthur's real projects, credits, media, and
+ * contact links are confirmed.
  */
 import { getPayload } from 'payload'
 
 import config from '../payload.config'
 import {
+  assertSeedSafe,
   placeholderImage,
   pick,
   removeSeedSet,
@@ -17,7 +24,7 @@ import {
   upsertBySlug,
   upsertSite,
 } from './lib/seed-helpers'
-import { DEMO_SET } from './lib/seed-sets'
+import { DEMO_SET, PLACEHOLDER_SET } from './lib/seed-sets'
 
 const t = {
   work: { pt: 'Trabalhos selecionados', en: 'Selected work' },
@@ -43,6 +50,16 @@ const t = {
   role: { pt: 'Função', en: 'Role' },
   format: { pt: 'Formato', en: 'Format' },
   status: { pt: 'Estado', en: 'Status' },
+  aboutHeading: { pt: 'Arthur compõe com cultura.', en: 'Arthur composes with culture.' },
+  basedIn: { pt: 'Lisboa, Portugal', en: 'Lisbon, Portugal' },
+  availability: {
+    pt: 'Aberto a novos projetos. Resposta em poucos dias.',
+    en: 'Open to new projects. Replies within a few days.',
+  },
+  contactIntro: {
+    pt: 'Um email direto chega mais depressa do que um formulário. Ambos funcionam.',
+    en: 'A direct email lands faster than a form. Both work.',
+  },
 }
 
 const OWNER = 'ART\'hur'
@@ -66,6 +83,35 @@ const aboutBody = {
     'When real content arrives, replace these notes in Payload under Desktop items → arthur_notes.txt.',
   ],
 }
+
+/**
+ * Provisional /about copy. It states the direction and says plainly that it is
+ * a placeholder; it invents no title, client, outcome, award, or metric.
+ */
+const aboutStandfirst = {
+  pt: 'Arthur trabalha com imagem, identidade e movimento. Este arquivo guarda o que ficou, o que mudou e o que ainda vale repetir.',
+  en: 'Arthur works with image, identity, and motion. This archive keeps what stayed, what changed, and what is still worth replaying.',
+}
+
+const aboutBio = {
+  pt: [
+    'Esta biografia é provisória. A direção visual já está definida — um arquivo vivo com ritmo, feito de frames, notas, marcas e trabalho selecionado — mas o texto final ainda depende do Arthur.',
+    'O que cada projeto mostra é o essencial: função, ano, colaboradores e contexto. Sem números inventados e sem promessas.',
+    'Para substituir este texto, abre o Payload em Site → About.',
+  ],
+  en: [
+    'This biography is provisional. The visual direction is settled — a living archive with rhythm, built from frames, notes, marks, and selected work — but the final words are still Arthur’s to write.',
+    'Each project shows what matters: role, year, collaborators, and context. No invented numbers and no promises.',
+    'To replace this copy, open Payload under Site → About.',
+  ],
+}
+
+const disciplines = [
+  { pt: 'Direção visual', en: 'Visual direction' },
+  { pt: 'Identidade', en: 'Identity' },
+  { pt: 'Movimento', en: 'Motion' },
+  { pt: 'Imagem', en: 'Image' },
+]
 
 const projects = [
   {
@@ -117,6 +163,8 @@ const projects = [
 
 async function seed() {
   const payload = await getPayload({ config })
+
+  await assertSeedSafe(payload, PLACEHOLDER_SET)
 
   payload.logger.info('Seeding ART\'hur starter content…')
 
@@ -244,9 +292,20 @@ async function seed() {
       showOncePerSession: true,
     },
     calendar: { enabled: false, highlightColor: '#d83823' },
+    about: {
+      heading: pick(t.aboutHeading, locale),
+      standfirst: pick(aboutStandfirst, locale),
+      bio: richText(pick(aboutBio, locale)),
+      portrait: avatar.id,
+      disciplines: disciplines.map((discipline) => ({ label: pick(discipline, locale) })),
+      basedIn: pick(t.basedIn, locale),
+      availability: pick(t.availability, locale),
+    },
     contact: {
       enabled: true,
       title: pick(t.contact, locale),
+      intro: pick(t.contactIntro, locale),
+      availability: pick(t.availability, locale),
       rows: [
         {
           icon: 'mail',

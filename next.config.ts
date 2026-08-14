@@ -14,6 +14,21 @@ const nextConfig: NextConfig = {
    * binary instead.
    */
   serverExternalPackages: ['sharp'],
+
+  images: {
+    /**
+     * Uploads live on the local filesystem until BLOB_READ_WRITE_TOKEN is set,
+     * at which point Payload rewrites every media URL to a Blob host. Without
+     * this pattern next/image answers 400 for all of them.
+     */
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.public.blob.vercel-storage.com',
+        pathname: '/**',
+      },
+    ],
+  },
 }
 
 export default withPayload(nextConfig)

@@ -659,12 +659,69 @@ export interface Site {
      */
     highlightColor?: string | null;
   };
+  /**
+   * The /about page. Leave the biography empty to fall back to the “about” text item on the desktop.
+   */
+  about?: {
+    /**
+     * Page heading. Falls back to the site tagline.
+     */
+    heading?: string | null;
+    /**
+     * One or two sentences under the heading, before the biography.
+     */
+    standfirst?: string | null;
+    bio?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    /**
+     * Falls back to the identity avatar.
+     */
+    portrait?: (number | null) | Media;
+    /**
+     * What you actually do, e.g. Direction, Motion, Identity.
+     */
+    disciplines?:
+      | {
+          label: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * e.g. Lisbon, Portugal.
+     */
+    basedIn?: string | null;
+    /**
+     * e.g. Taking commissions from March.
+     */
+    availability?: string | null;
+  };
   contact?: {
     /**
      * Show the floating contact button.
      */
     enabled?: boolean | null;
     title?: string | null;
+    /**
+     * Short line at the top of the /contact page.
+     */
+    intro?: string | null;
+    /**
+     * What a visitor can expect, e.g. Replies within two days.
+     */
+    availability?: string | null;
     rows?:
       | {
           icon: 'whatsapp' | 'mail' | 'instagram' | 'phone' | 'custom';
@@ -781,11 +838,29 @@ export interface SiteSelect<T extends boolean = true> {
         enabled?: T;
         highlightColor?: T;
       };
+  about?:
+    | T
+    | {
+        heading?: T;
+        standfirst?: T;
+        bio?: T;
+        portrait?: T;
+        disciplines?:
+          | T
+          | {
+              label?: T;
+              id?: T;
+            };
+        basedIn?: T;
+        availability?: T;
+      };
   contact?:
     | T
     | {
         enabled?: T;
         title?: T;
+        intro?: T;
+        availability?: T;
         rows?:
           | T
           | {
