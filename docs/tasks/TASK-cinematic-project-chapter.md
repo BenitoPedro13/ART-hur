@@ -265,6 +265,8 @@ Adopt the reference's frame-sequence mechanism without copying its logo, PNG fra
 - Give `芸` two expressive articulated legs and one restrained ART'hur orange incision so it reads as a character in motion and remains connected to the Living Tag system.
 - Treat the `芸` body and legs as one heavy white silhouette: no enclosing circle, no halo, no thin dangling wires, and no black typographic fill.
 - Keep the legs short, thick, rounded, and visually fused into the lower strokes; enlarge the complete walker enough to read immediately over project media.
+- Render the walker as a screen-space overlay with a hard maximum of `82px × 82px`; do not let the SVG viewBox scale it differently across viewport sizes.
+- Rotate only the fixed 82px outer container to the live path tangent, while a separate inner layer visibly swaps the 15 walking frames at approximately 8 fps.
 - Keep every frame registered to the same center point and reveal exactly one frame per walking tick.
 - Use authored body compression, lean, alternating feet, and subtle halo changes so the mark visibly walks rather than merely bobbing as one rigid shape.
 - Keep the outer walker group fixed at the exact viewport-center path anchor.
@@ -382,6 +384,8 @@ This approach also satisfies the existing specification:
 - [ ] Exactly one of 15 original ART'hur walker frames is visible at a time
 - [ ] The walker visibly reads as the Japanese `芸` art glyph with two legs and an ART'hur orange incision
 - [ ] Walker has no enclosing halo and reads as one substantial white character silhouette at desktop and mobile sizes
+- [ ] Walker never exceeds 82 × 82 CSS pixels on desktop or mobile
+- [ ] Visible frame index changes at walking cadence while the fixed outer container remains center-registered
 - [ ] Walker frame index advances while idle without moving the outer center anchor
 - [ ] Reverse navigation flips the original walker while preserving the path tangent
 - [ ] No MILEZ walking/disappearance image or silhouette is copied into the repository
