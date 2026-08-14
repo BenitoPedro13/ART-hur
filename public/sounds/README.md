@@ -19,13 +19,12 @@ programmatic playback before one, and it stays off entirely under
 
 ## `ambient.mp3`
 
-Arthur's own track: 3m40s, encoded to 96 kbps mono (2.5 MB).
+Arthur's own track: 2m59s, encoded to 96 kbps mono (2.1 MB).
 
-It was supplied at 256 kbps stereo (6.7 MB), which is far more than a bed
+It was supplied at 320 kbps stereo (6.8 MB), which is far more than a bed
 playing at volume 0.16 can carry — the difference is inaudible at that level
-and the saving is over 4 MB on a file some visitors will download. The original
-is preserved in git history at commit `87bb199` if a higher-quality master is
-ever wanted.
+and the saving is over 4.5 MB on a file some visitors will download. Keep the
+master outside the repo; only the encoded bed is committed.
 
 Re-encode after any future swap:
 
