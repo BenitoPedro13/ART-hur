@@ -90,7 +90,10 @@ export async function generateMetadata({
         'max-video-preview': -1,
       },
     },
-    formatDetection: { telephone: false },
+    // Chrome's mobile address detector can misread project index/title/year/role
+    // text run together (e.g. "05 / 05 Dhiulia Souza 2026Função") as a street
+    // address and offer to open it in Google Maps mid-transition.
+    formatDetection: { telephone: false, address: false, email: false },
   }
 }
 

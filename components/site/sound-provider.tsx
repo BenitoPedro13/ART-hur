@@ -43,13 +43,14 @@ function playClip(src: string, muted: boolean) {
  * Sound for the archive: off until asked for.
  *
  * The spec is explicit that audio is optional, muted by default, and needs a
- * visible control before anything non-essential plays. So nothing is audible
- * until the visitor says so at the opening gate or flips the toggle, and the
- * choice persists.
- *
- * Browsers also refuse programmatic playback before a real gesture, so the
- * ambient bed waits for the first pointer or key event rather than trying at
- * mount and failing.
+ * visible control before anything non-essential plays — and section 13 is
+ * explicit that it must never autoplay. So the ambient bed only ever starts
+ * as the direct result of clicking a sound control (the opening gate's
+ * "Entrar com som" button, or the persistent toggle): never from an
+ * unrelated gesture — a swipe past the gate, a tap to skip the intro —
+ * carrying over a stale preference from a previous visit. The preference
+ * still persists per browser, but persistence only changes what the toggle
+ * shows on arrival; playback is re-earned by an explicit click every visit.
  */
 export function SoundProvider({ children }: { children: React.ReactNode }) {
   /**
@@ -60,9 +61,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
    * applied in a mount effect instead.
    */
   const [muted, setMutedState] = useState(true)
-  const mutedRef = useRef(true)
   const ambientRef = useRef<HTMLAudioElement | null>(null)
-  const ambientStarted = useRef(false)
   const ambientAvailable = useRef(true)
 
   useEffect(() => {
@@ -72,10 +71,6 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMutedState(stored === "true")
   }, [])
-
-  useEffect(() => {
-    mutedRef.current = muted
-  }, [muted])
 
   useEffect(() => {
     // Reduced motion asks for less audiovisual intensity, so the room tone
@@ -92,28 +87,25 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     }
     ambientRef.current = audio
 
-    function tryStart() {
-      if (ambientStarted.current || !ambientAvailable.current) return
-      ambientStarted.current = true
-      // Reads the ref, not the closed-over prop: this listener is created once
-      // and must see the mute state as it is when the gesture actually lands.
-      if (!mutedRef.current) audio.play().catch(() => {})
-    }
-
-    window.addEventListener("pointerdown", tryStart, { once: true })
-    window.addEventListener("keydown", tryStart, { once: true })
-
     return () => {
       audio.pause()
-      window.removeEventListener("pointerdown", tryStart)
-      window.removeEventListener("keydown", tryStart)
     }
   }, [])
 
   useEffect(() => {
     const audio = ambientRef.current
-    if (!audio || !ambientStarted.current) return
+    if (!audio || !ambientAvailable.current) return
 
+    /**
+     * This effect also runs once on mount, driven by the localStorage restore
+     * above rather than a click — a returning visitor's stored preference must
+     * never be enough to start audio by itself. Without a real gesture in this
+     * render pass, `play()` is rejected by the browser's autoplay policy and
+     * the rejection is swallowed here, which is exactly the outcome the gate
+     * requires: nothing audible until *this* visit's gate button or the
+     * persistent toggle is clicked, each of which is a genuine gesture that
+     * re-runs this same effect and succeeds.
+     */
     if (muted) audio.pause()
     else audio.play().catch(() => {})
   }, [muted])
@@ -127,7 +119,7 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const toggleMuted = useCallback(() => setMuted(!mutedRef.current), [setMuted])
+  const toggleMuted = useCallback(() => setMuted(!muted), [muted, setMuted])
 
   const playHover = useCallback(() => playClip(HOVER_SRC, muted), [muted])
   const playClick = useCallback(() => playClip(CLICK_SRC, muted), [muted])
