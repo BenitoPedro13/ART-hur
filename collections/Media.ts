@@ -23,14 +23,12 @@ export const Media: CollectionConfig = {
   upload: {
     mimeTypes: ['image/*'],
     /**
-     * Cap very large camera exports; the public site reads `hero` (1920px) first.
-     * `withoutEnlargement` keeps smaller assets from being upscaled.
+     * No `formatOptions` or `resizeOptions` on the main file. With Blob
+     * `clientUploads`, the browser stores the original as-is and Payload never
+     * re-uploads the converted main file — yet it still renames the record to
+     * `.webp`, so the stored URL points at a blob that does not exist. Only the
+     * derivatives below are generated and uploaded server-side.
      */
-    resizeOptions: {
-      width: 4096,
-      withoutEnlargement: true,
-    },
-    formatOptions: webp(84),
     imageSizes: [
       {
         name: 'thumbnail',

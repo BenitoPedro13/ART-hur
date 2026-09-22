@@ -43,3 +43,15 @@ Existing media keeps its stored files until re-uploaded.
 - `pnpm typecheck`
 - After deploy: upload a file > 4.5 MB in `/admin` → Media.
 - Compare byte size of original vs hero derivative on a new upload.
+
+## Regression: missing originals (2026-09-22)
+
+Main-file `formatOptions`/`resizeOptions` do not work with `clientUploads`: the browser
+uploads `IMG_x.jpg` to Blob, Payload renames the record to `IMG_x.webp`, and the
+converted main file is never uploaded. 24 records (ids 117–140) point at originals that
+404. Galleries mostly read `hero`, so only images narrower than 1920px (no `hero`
+derivative: ids 120, 137) showed as broken.
+
+- Removed `formatOptions` and `resizeOptions` from the main upload; derivatives keep WebP.
+- Existing records need their `.webp` original written to Blob (converted from the
+  stored `.jpg`) or a re-upload.
