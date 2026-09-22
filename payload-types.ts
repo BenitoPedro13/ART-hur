@@ -196,7 +196,7 @@ export interface Media {
   };
 }
 /**
- * Individual works shown inside a folder window.
+ * Works on the public site. Save a project and it appears in the archive sequence unless Archived is checked.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "projects".
@@ -256,9 +256,13 @@ export interface Project {
       }[]
     | null;
   /**
-   * Lower numbers appear first.
+   * Lower numbers appear first in the home timeline and /index.
    */
   order?: number | null;
+  /**
+   * Hidden from the public site (home, index, sitemap). The case study URL returns 404 while archived.
+   */
+  archived?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -295,7 +299,7 @@ export interface DesktopItem {
    */
   y?: number | null;
   /**
-   * Projects shown inside this folder, in this order.
+   * Legacy desktop folder window only. The public archive lists every non-archived project by Order.
    */
   projects?: (number | Project)[] | null;
   body?: {
@@ -509,6 +513,7 @@ export interface ProjectsSelect<T extends boolean = true> {
         id?: T;
       };
   order?: T;
+  archived?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -8,8 +8,8 @@ import { Slate, slateRows } from "@/components/site/slate"
 import { StructuredData } from "@/components/site/structured-data"
 import { getDictionary, isLocale } from "@/lib/i18n"
 import { mediaAlt, mediaOgSize, mediaUrl } from "@/lib/media"
-import { getDesktopItems, getSite } from "@/lib/payload"
-import { selectedProjects, yearSpan } from "@/lib/projects"
+import { getPublicProjects, getSite } from "@/lib/payload"
+import { yearSpan } from "@/lib/projects"
 import { buildMetadata, siteUrl } from "@/lib/seo"
 
 /** Rendered per request for the same reason as the home; see that route. */
@@ -26,14 +26,14 @@ export async function generateMetadata({
   const dictionary = getDictionary(locale)
 
   let site: Awaited<ReturnType<typeof getSite>>
-  let projects: ReturnType<typeof selectedProjects> = []
+  let projects: Awaited<ReturnType<typeof getPublicProjects>> = []
   try {
-    const [loadedSite, items] = await Promise.all([
+    const [loadedSite, loadedProjects] = await Promise.all([
       getSite(locale),
-      getDesktopItems(locale),
+      getPublicProjects(locale),
     ])
     site = loadedSite
-    projects = selectedProjects(items)
+    projects = loadedProjects
   } catch {
     return { title: dictionary.indexLabel }
   }
@@ -83,11 +83,10 @@ export default async function IndexPage({
   }
 
   const dictionary = getDictionary(locale)
-  const [site, items] = await Promise.all([
+  const [site, projects] = await Promise.all([
     getSite(locale),
-    getDesktopItems(locale),
+    getPublicProjects(locale),
   ])
-  const projects = selectedProjects(items)
 
   const rows = slateRows([
     {

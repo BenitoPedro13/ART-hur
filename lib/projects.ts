@@ -1,13 +1,10 @@
 import type { DesktopItem, Project } from "@/payload-types"
 
 /**
- * The archive's project order.
+ * Legacy folder curation for the inherited desktop windows.
  *
- * Projects are curated by dropping them into a folder desktop item, so the
- * public sequence is whatever those folders contain — not every row in the
- * collection. The home timeline, /index, and /work all read the sequence from
- * here so they can never disagree about membership, order, or a project's
- * position in it.
+ * Public routes use `getPublicProjects()` instead — every non-archived project
+ * in the collection, sorted by `order`.
  */
 export function selectedProjects(items: DesktopItem[]): Project[] {
   return items

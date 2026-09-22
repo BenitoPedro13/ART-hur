@@ -6,8 +6,8 @@ import { OpeningSequence } from "@/components/site/opening-sequence"
 import { SiteFooter } from "@/components/site/site-footer"
 import { compact, StructuredData } from "@/components/site/structured-data"
 import { getDictionary, isLocale } from "@/lib/i18n"
-import { getDesktopItems, getSite } from "@/lib/payload"
-import { selectedProjects, yearSpan } from "@/lib/projects"
+import { getPublicProjects, getSite } from "@/lib/payload"
+import { yearSpan } from "@/lib/projects"
 import { buildMetadata, personSchema, websiteSchema } from "@/lib/seo"
 
 /**
@@ -63,13 +63,10 @@ export default async function ArchivePage({
     notFound()
   }
 
-  const [site, items] = await Promise.all([
+  const [site, projects] = await Promise.all([
     getSite(locale),
-    getDesktopItems(locale),
+    getPublicProjects(locale),
   ])
-
-  // Shared with /index and /work so all three agree on order and membership.
-  const projects = selectedProjects(items)
 
   const dictionary = getDictionary(locale)
 

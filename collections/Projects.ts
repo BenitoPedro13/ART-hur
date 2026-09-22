@@ -10,11 +10,19 @@ export const Projects: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'year', 'order'],
-    description: 'Individual works shown inside a folder window.',
+    defaultColumns: ['title', 'year', 'order', 'archived'],
+    description:
+      'Works on the public site. Save a project and it appears in the archive sequence unless Archived is checked.',
   },
   access: {
-    read: () => true,
+    read: ({ req }) => {
+      if (req.user) return true
+      return {
+        archived: {
+          equals: false,
+        },
+      }
+    },
   },
   defaultSort: 'order',
   fields: [
@@ -124,7 +132,17 @@ export const Projects: CollectionConfig = {
       defaultValue: 0,
       admin: {
         position: 'sidebar',
-        description: 'Lower numbers appear first.',
+        description: 'Lower numbers appear first in the home timeline and /index.',
+      },
+    },
+    {
+      name: 'archived',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description:
+          'Hidden from the public site (home, index, sitemap). The case study URL returns 404 while archived.',
       },
     },
   ],

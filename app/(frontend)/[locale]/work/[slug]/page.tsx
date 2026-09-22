@@ -17,13 +17,12 @@ import {
   mediaUrl,
   resolveMedia,
 } from "@/lib/media"
-import { getDesktopItems, getProjectBySlug, getSite } from "@/lib/payload"
+import { getProjectBySlug, getPublicProjects, getSite } from "@/lib/payload"
 import {
   frameNumber,
   projectCredits,
   projectFrameCount,
   projectNeighbours,
-  selectedProjects,
 } from "@/lib/projects"
 import { RichText } from "@/lib/rich-text"
 import type { Project } from "@/payload-types"
@@ -123,9 +122,9 @@ export default async function ProjectPage({
 
   const dictionary = getDictionary(locale)
 
-  const [site, items, project] = await Promise.all([
+  const [site, projects, project] = await Promise.all([
     getSite(locale),
-    getDesktopItems(locale),
+    getPublicProjects(locale),
     getProjectBySlug(slug, locale),
   ])
 
@@ -133,13 +132,10 @@ export default async function ProjectPage({
     notFound()
   }
 
-  const projects = selectedProjects(items)
   const { index, total, next } = projectNeighbours(projects, slug)
   const credits = projectCredits(project)
   const frames = projectFrameCount(project)
 
-  // A project reachable by URL but not curated into a folder has no position in
-  // the sequence. It still reads fine; it just does not claim one.
   const position =
     index >= 0
       ? `${frameNumber(index)} / ${String(total).padStart(2, "0")}`

@@ -1,6 +1,7 @@
 import * as migration_20260813_200358_fix_form_and_video_playback from './20260813_200358_fix_form_and_video_playback';
 import * as migration_20260813_202700_add_background_video_playback from './20260813_202700_add_background_video_playback';
 import * as migration_20260814_064456_art_hur_about_and_contact from './20260814_064456_art_hur_about_and_contact';
+import * as migration_20260922_215600_project_archived from './20260922_215600_project_archived';
 
 export const migrations = [
   {
@@ -17,5 +18,10 @@ export const migrations = [
     up: migration_20260814_064456_art_hur_about_and_contact.up,
     down: migration_20260814_064456_art_hur_about_and_contact.down,
     name: '20260814_064456_art_hur_about_and_contact',
+  },
+  {
+    up: migration_20260922_215600_project_archived.up,
+    down: migration_20260922_215600_project_archived.down,
+    name: '20260922_215600_project_archived',
   },
 ];

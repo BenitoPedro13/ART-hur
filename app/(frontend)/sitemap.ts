@@ -1,8 +1,7 @@
 import type { MetadataRoute } from "next"
 
 import { defaultLocale, locales } from "@/lib/locales"
-import { getDesktopItems } from "@/lib/payload"
-import { selectedProjects } from "@/lib/projects"
+import { getPublicProjects } from "@/lib/payload"
 import { siteUrl } from "@/lib/seo"
 
 /**
@@ -44,9 +43,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // A database outage should degrade the sitemap, not 500 it.
-  let projects: Awaited<ReturnType<typeof selectedProjects>> = []
+  let projects: Awaited<ReturnType<typeof getPublicProjects>> = []
   try {
-    projects = selectedProjects(await getDesktopItems(defaultLocale))
+    projects = await getPublicProjects(defaultLocale)
   } catch {
     projects = []
   }

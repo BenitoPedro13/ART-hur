@@ -135,7 +135,8 @@ export const DesktopItems: CollectionConfig = {
       hasMany: true,
       admin: {
         condition: (data) => data?.type === 'folder',
-        description: 'Projects shown inside this folder, in this order.',
+        description:
+          'Legacy desktop folder window only. The public archive lists every non-archived project by Order.',
       },
     },
     {

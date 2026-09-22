@@ -20,6 +20,26 @@ export async function getSite(locale: Locale): Promise<Site> {
   })
 }
 
+/** Public archive sequence: every non-archived project, sorted by `order`. */
+export async function getPublicProjects(locale: Locale): Promise<Project[]> {
+  const payload = await getPayloadClient()
+
+  const { docs } = await payload.find({
+    collection: 'projects',
+    where: {
+      archived: {
+        equals: false,
+      },
+    },
+    sort: 'order',
+    limit: 100,
+    depth: 2,
+    locale: toPayloadLocale<PayloadLocale>(locale),
+  })
+
+  return docs
+}
+
 export async function getDesktopItems(locale: Locale): Promise<DesktopItem[]> {
   const payload = await getPayloadClient()
 
@@ -50,7 +70,12 @@ export async function getProjectBySlug(
 
   const { docs } = await payload.find({
     collection: 'projects',
-    where: { slug: { equals: slug } },
+    where: {
+      and: [
+        { slug: { equals: slug } },
+        { archived: { equals: false } },
+      ],
+    },
     limit: 1,
     depth: 2,
     locale: toPayloadLocale<PayloadLocale>(locale),

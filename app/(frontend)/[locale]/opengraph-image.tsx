@@ -3,8 +3,8 @@ import { ImageResponse } from 'next/og'
 import { getDictionary, isLocale } from '@/lib/i18n'
 import { OG, OG_CONTENT_TYPE, OG_SIZE, OgRule, ogFonts, ogFrameStyle } from '@/lib/og'
 import { siteUrl } from '@/lib/seo'
-import { getDesktopItems, getSite } from '@/lib/payload'
-import { selectedProjects, yearSpan } from '@/lib/projects'
+import { getPublicProjects, getSite } from '@/lib/payload'
+import { yearSpan } from '@/lib/projects'
 
 export const size = OG_SIZE
 export const contentType = OG_CONTENT_TYPE
@@ -33,8 +33,10 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
 
   if (safeLocale) {
     try {
-      const [site, items] = await Promise.all([getSite(safeLocale), getDesktopItems(safeLocale)])
-      const projects = selectedProjects(items)
+      const [site, projects] = await Promise.all([
+        getSite(safeLocale),
+        getPublicProjects(safeLocale),
+      ])
       tagline = site.tagline ?? site.seo?.siteDescription ?? null
       count = projects.length
       span = yearSpan(projects)
