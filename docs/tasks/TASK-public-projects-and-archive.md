@@ -42,9 +42,13 @@ work from the public sequence without deleting CMS data.
 
 ## Deploy / database
 
-Production must have `projects.archived`. `pnpm build` runs `payload migrate` first
-(on Vercel the clone path has no apostrophe, so the CLI works).
+Production must have `projects.archived`. `pnpm build` runs
+`scripts/ensure-project-archived-column.ts` first (non-interactive `ADD COLUMN IF
+NOT EXISTS`).
 
-If migrate fails locally (folder name `ART'hur` breaks Payload’s dynamic import),
-run `scripts/sql/add-projects-archived-column.sql` in the Supabase SQL editor (or
-any Postgres client) against `DATABASE_URL`, then redeploy or restart dev.
+Do **not** chain `payload migrate` into Vercel build: dev-mode schema push leaves
+a batch `-1` migration row and migrate prompts for confirmation, which hangs CI.
+
+Full migrations: run `pnpm migrate` locally when needed (or SQL in
+`scripts/sql/add-projects-archived-column.sql`). Local folder name `ART'hur` can
+break the migrate CLI’s dynamic import — use SQL as fallback.

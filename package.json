@@ -5,8 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "payload migrate && next build",
+    "build": "payload run scripts/ensure-project-archived-column.ts && next build",
     "migrate": "payload migrate",
+    "ensure:schema": "payload run scripts/ensure-project-archived-column.ts",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
