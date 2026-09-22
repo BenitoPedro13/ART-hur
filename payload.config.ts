@@ -65,7 +65,16 @@ export default buildConfig({
     ...(process.env.BLOB_READ_WRITE_TOKEN
       ? [
           vercelBlobStorage({
-            collections: { media: true },
+            collections: {
+              media: {
+                /**
+                 * Media is publicly readable, so serve it straight from the Blob
+                 * CDN. Otherwise every image — and every cold next/image fetch —
+                 * streams through an uncached Payload function first.
+                 */
+                disablePayloadAccessControl: true,
+              },
+            },
             token: process.env.BLOB_READ_WRITE_TOKEN,
             /**
              * Serverless routes cap request bodies at ~4.5 MB. Client uploads send

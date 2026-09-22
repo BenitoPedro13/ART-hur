@@ -1378,7 +1378,6 @@
   }
 
   .work-caption {
-    grid-column: 1 / -1;
     color: var(--room-muted);
   }
 
@@ -1832,7 +1831,8 @@
 
     /* The authored rhythm needs width to read as composition; below this it
        would just be a column of arbitrarily narrow images. */
-    .work-figure-image {
+    .work-figure-image,
+    .work-caption {
       grid-column: 1 / -1 !important;
     }
 

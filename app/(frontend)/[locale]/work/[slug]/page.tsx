@@ -48,7 +48,7 @@ const GALLERY_RHYTHM = [
   { span: 6, start: 1, lift: false },
   { span: 5, start: 8, lift: true },
   { span: 8, start: 5, lift: false },
-  { span: 5, start: 1, lift: true },
+  { span: 4, start: 1, lift: true },
   { span: 6, start: 7, lift: false },
 ] as const
 
@@ -260,6 +260,9 @@ export default async function ProjectPage({
 
               const slot = GALLERY_RHYTHM[order % GALLERY_RHYTHM.length]
               const { width, height } = mediaDimensions(entry.image)
+              // Caption sits under its own image. A full-width caption lay in
+              // the row a lifted next frame pulls up into, and got covered.
+              const column = { gridColumn: `${slot.start} / span ${slot.span}` }
 
               return (
                 <Reveal
@@ -273,11 +276,12 @@ export default async function ProjectPage({
                     width={width}
                     height={height}
                     sizes={`(max-width: 900px) 100vw, ${Math.round((slot.span / 12) * 90)}vw`}
-                    loading="lazy"
+                    // The opening frames sit in or near the first view.
+                    loading={order < 2 ? "eager" : "lazy"}
                     className="work-figure-image"
-                    style={{ gridColumn: `${slot.start} / span ${slot.span}` }}
+                    style={column}
                   />
-                  <figcaption className="work-caption font-data">
+                  <figcaption className="work-caption font-data" style={column}>
                     {formatPosition(dictionary.frameOf, order + 1, frames)}
                   </figcaption>
                 </Reveal>
