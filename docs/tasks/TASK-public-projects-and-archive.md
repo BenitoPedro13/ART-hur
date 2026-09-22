@@ -39,3 +39,12 @@ work from the public sequence without deleting CMS data.
 - `order` continues to control sequence (lower first). New projects default to `0`
   and may need a higher order to sit at the end.
 - Folder desktop items remain for legacy desktop UI only.
+
+## Deploy / database
+
+Production must have `projects.archived`. `pnpm build` runs `payload migrate` first
+(on Vercel the clone path has no apostrophe, so the CLI works).
+
+If migrate fails locally (folder name `ART'hur` breaks Payload’s dynamic import),
+run `scripts/sql/add-projects-archived-column.sql` in the Supabase SQL editor (or
+any Postgres client) against `DATABASE_URL`, then redeploy or restart dev.

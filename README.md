@@ -151,7 +151,8 @@ pnpm dev
 
 ```bash
 pnpm dev          # start Next.js
-pnpm build        # production build
+pnpm build        # payload migrate, then production build
+pnpm migrate      # apply Postgres migrations only
 pnpm lint         # ESLint
 pnpm typecheck    # TypeScript check
 pnpm seed         # ART'hur starter content
