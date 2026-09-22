@@ -1,11 +1,21 @@
 "use client"
 
-import { useEffect, useRef, useState, type CSSProperties } from "react"
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react"
 import { useReducedMotion } from "motion/react"
 
 import { LivingTag } from "@/components/brand/living-tag"
 import { useSound } from "@/components/site/sound-provider"
 import type { Dictionary } from "@/lib/i18n"
+import {
+  OPENING_SEEN_ATTR,
+  persistOpeningSeenForLocalDev,
+} from "@/lib/opening"
 
 /** How long the plate's CSS cascade takes to settle before the gate arrives. */
 const SEQUENCE_MS = 1500
@@ -35,14 +45,16 @@ const ENTER_KEYS = new Set([
 type Phase = "opening" | "gating" | "exiting" | "hidden"
 
 /**
- * Module scope, deliberately — not `sessionStorage`.
+ * Module scope — not production sessionStorage.
  *
  * The spec asks that the opening not replay on every route transition, which
  * is not the same as showing it once per session. A refresh should give it to
- * you again; navigating home from `/index` should not. A module variable draws
- * exactly that line for free: it survives client-side navigation and resets on
- * a real page load. Persisting to storage would suppress it on refresh too,
- * which is the wrong half of the rule.
+ * you again on the live site; navigating home from `/index` should not. A
+ * module variable draws that line: it survives client-side navigation and resets
+ * on a real page load.
+ *
+ * Localhost only: `sessionStorage` + `data-opening-seen` (see `lib/opening.ts`)
+ * so dev reloads are not gated again in the same tab.
  */
 let shownThisPageLoad = false
 
@@ -109,11 +121,20 @@ export function OpeningSequence({
     phaseRef.current = phase
   }, [phase])
 
+  // Localhost reload: head script hid the plate pre-paint; unmount before effects run.
+  useLayoutEffect(() => {
+    if (!document.documentElement.hasAttribute(OPENING_SEEN_ATTR)) return
+    shownThisPageLoad = true
+    phaseRef.current = "hidden"
+    setPhase("hidden")
+  }, [])
+
   function exit() {
     if (phaseRef.current === "exiting" || phaseRef.current === "hidden") return
 
     setPhase("exiting")
     shownThisPageLoad = true
+    persistOpeningSeenForLocalDev()
     window.setTimeout(
       () => setPhase("hidden"),
       reduceMotion ? REDUCED_EXIT_MS : EXIT_MS

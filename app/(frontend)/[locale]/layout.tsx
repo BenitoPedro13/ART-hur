@@ -10,6 +10,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { isLocale, locales } from '@/lib/i18n'
 import { getSite } from '@/lib/payload'
+import { openingBlockingScript } from '@/lib/opening'
 import { siteUrl } from '@/lib/seo'
 
 /**
@@ -126,6 +127,9 @@ export default async function LocaleLayout({
         fontMono.variable
       )}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: openingBlockingScript }} />
+      </head>
       <body className="bg-void">
         <ThemeProvider>
           <SoundProvider>

@@ -2061,6 +2061,12 @@
     transition: opacity 300ms ease;
   }
 
+  /* Localhost dev: head script sets this after a dismiss so reloads skip the plate. */
+  html[data-opening-seen] [data-opening] {
+    display: none !important;
+    pointer-events: none;
+  }
+
   .opening-plate {
     display: flex;
     width: 100%;
