@@ -30,7 +30,16 @@ CMS workflow on the deployed admin.
 - Admin import map already registers `VercelBlobClientUploadHandler` (no schema change).
 - Vercel Blob platform limits still apply; this removes the serverless body cap only.
 
+## Upload compression (same task)
+
+- `formatOptions` on the main file and each `imageSizes` entry: WebP at tiered quality.
+- `resizeOptions` on the main file: cap width at 4096px, never upscale (`withoutEnlargement: true`).
+- EXIF stays stripped (`withMetadata` default).
+
+Existing media keeps its stored files until re-uploaded.
+
 ## Verification
 
 - `pnpm typecheck`
 - After deploy: upload a file > 4.5 MB in `/admin` → Media.
+- Compare byte size of original vs hero derivative on a new upload.
