@@ -67,6 +67,11 @@ export default buildConfig({
           vercelBlobStorage({
             collections: { media: true },
             token: process.env.BLOB_READ_WRITE_TOKEN,
+            /**
+             * Serverless routes cap request bodies at ~4.5 MB. Client uploads send
+             * the file straight to Blob; Payload only registers the asset afterward.
+             */
+            clientUploads: true,
           }),
         ]
       : []),
